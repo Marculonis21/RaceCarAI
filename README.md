@@ -8,7 +8,7 @@ Uživatel nadefinuje trať, auto (GA) se senzory se pak učí trať projet.
 
 # WIP:
 * [x] Vytváření tratí
-    - asi asi budu dělat screen tratě a porovnávat pixely
+    - **asi asi budu dělat screen tratě a porovnávat pixely**
     - možno možná dělat quadtree pro zjišťování colizí 
 * [ ] Raycast pro zjištění vzdálenosti
 * [ ] Auto a pohyb
