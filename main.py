@@ -10,10 +10,16 @@ PG.init()
 screen = PG.display.set_mode((800,800))
 PG.display.set_caption("RACE CAR AI")
 
+
 BRUSH_RADIUS = 20
+TRACK_IMAGE = None
 boundaries = []
 while True:
     screen.fill((50,50,50))
+
+    for b in boundaries:
+        b.update()
+
 
     for event in PG.event.get():
         if event.type == PG.QUIT: sys.exit()
@@ -44,8 +50,9 @@ while True:
             if event.key == PG.K_ESCAPE:
                 sys.exit()
 
-    for b in boundaries:
-        b.update()
+            if event.key == PG.K_KP_ENTER:
+                PG.image.save(screen, "track.png")
+                TRACK_IMAGE = PG.image.load("track.png")
 
     aPos = PG.mouse.get_pos()
     PG.draw.circle(screen, PG.Color('white'), aPos, BRUSH_RADIUS, 1)
