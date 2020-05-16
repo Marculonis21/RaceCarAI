@@ -61,16 +61,22 @@ while True:
         #KEYBOARD EVENTS
         if event.type == PG.KEYDOWN:
 
+            ''' PLAYER CONTROL 
             if event.key == PG.K_LEFT:
-                carList[0].rel_rotate(5)
+                carList[0].rel_rotate(15)
             if event.key == PG.K_RIGHT:
-                carList[0].rel_rotate(-5)
+                carList[0].rel_rotate(-15)
+            '''
+
+            #BOUNDARY CLEAR - N
             if event.key == PG.K_n:
                 boundaries = []
 
+            #EXIT - ESCAPE
             if event.key == PG.K_ESCAPE:
                 sys.exit()
 
+            #END DRAWING START TRAINING - ENTER
             if event.key == PG.K_KP_ENTER:
                 PG.image.save(screen, "data/track.png")
                 TRACK_IMAGE = PG.image.load("data/track.png")
@@ -79,8 +85,9 @@ while True:
 
                 MODE = TRAINING
 
-    aPos = PG.mouse.get_pos()
-    PG.draw.circle(screen, PG.Color('white'), aPos, BRUSH_RADIUS, 1)
+    if(MODE == SETUP): 
+        aPos = PG.mouse.get_pos()
+        PG.draw.circle(screen, PG.Color('white'), aPos, BRUSH_RADIUS, 1)
 
     if(MODE == TRAINING):
         for car in carList:

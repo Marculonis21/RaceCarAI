@@ -21,15 +21,16 @@ class RayCaster:
 
         temp = start
         for step in range(self.maxLength//self.resolution):
-            temp = (int(round((temp[0] + X_step))),int(round(temp[1] - Y_step)))
+            temp = (temp[0] + X_step, temp[1] - Y_step)
+            roundTemp = ((int(round(temp[0]))),int(round(temp[1])))
 
             try:
-                if(self.testImage.get_at(temp) == self.collider):
-                    if(self.visible): return (True, step * self.resolution, temp)
+                if(self.testImage.get_at(roundTemp) == self.collider):
+                    if(self.visible): return (True, step * self.resolution, roundTemp)
                     else: return (True, step * self.resolution)
             except IndexError:
                 pass
 
-        if(self.visible): return (False, self.maxLength, temp)  
+        if(self.visible): return (False, self.maxLength, roundTemp)  
         else: return (False, self.maxLength)
 
