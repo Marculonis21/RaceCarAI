@@ -17,6 +17,8 @@ class Car:
         self.position = (0,0)
         self.rotation = 0
 
+        self.startPosition = (0,0)
+
         self.speed = 0
         self.wheelDir = 0
         self.MAX_wheelDir = 50
@@ -45,13 +47,18 @@ class Car:
         x4 = math.cos(math.radians(self.rotation+180+angle)) * c
         y4 = math.sin(math.radians(self.rotation+180+angle)) * c
 
+        xx = math.cos(math.radians(self.rotation)) * car_width/2
+        yy = math.sin(math.radians(self.rotation)) * car_width/2
+        
         center_pos = self.get_pos()
+        NN = (int(center_pos[0] + xx), int(center_pos[1] - yy))
+
         NE = (int(center_pos[0] + x1), int(center_pos[1] - y1))
         NW = (int(center_pos[0] + x3), int(center_pos[1] - y3))
         SE = (int(center_pos[0] + x2), int(center_pos[1] - y2))
         SW = (int(center_pos[0] + x4), int(center_pos[1] - y4))
 
-        return (NW,NE,SW,SE)
+        return (NN,NE,SE,NW,SW)
 
 
     def rel_rotate(self, angle):
@@ -64,7 +71,7 @@ class Car:
 
     def update_pos(self):
         self.position = (self.position[0] + (self.speed * math.cos(math.radians(self.rotation))),
-                         self.position[1] + (self.speed * math.sin(math.radians(self.rotation+180))))
+                         self.position[1] - (self.speed * math.sin(math.radians(self.rotation))))
 
     def set_pos(self, pos):
         self.position = pos
