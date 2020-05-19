@@ -4,20 +4,21 @@ import pygame as PG
 import math
 
 class RayCaster:
-    def __init__(self, testImage, collider, resolution = 1, maxLength = 50, visible = False):
+    def __init__(self, testImage, collider, maxLength = 50):
         self.testImage = testImage #Image to test against
         self.collider = collider #Color collider
-        self.resolution = resolution #Unit-steps to test
         self.maxLength = maxLength #Max units to test
-        self.visible = visible
+        self.visible = False
 
-    def cast(self, start, angleDir):
+    def cast(self, start, angleDir, resolution = 1, screen = PG.Surface((0,0)), visible = False):
         #start - Start position of the Ray
         #angleDir - Ray angle
 
+        self.visible = visible
+        self.resolution = resolution
+
         X_step = math.cos(math.radians(angleDir)) * self.resolution
         Y_step = math.sin(math.radians(angleDir)) * self.resolution
-        print(angleDir)
 
         temp = start
         for step in range(self.maxLength//self.resolution):
@@ -26,11 +27,16 @@ class RayCaster:
 
             try:
                 if(self.testImage.get_at(roundTemp) == self.collider):
-                    if(self.visible): return (True, step * self.resolution, roundTemp)
-                    else: return (True, step * self.resolution)
+                    if(self.visible): 
+                        PG.draw.line(screen, PG.Color("white"), start, roundTemp)
+                        PG.draw.circle(screen, PG.Color("red"), roundTemp, 5, 0)
+
+                    return (True, step * self.resolution, roundTemp)
+
             except IndexError:
                 pass
 
-        if(self.visible): return (False, self.maxLength, roundTemp)  
-        else: return (False, self.maxLength)
-
+        if(self.visible): 
+            PG.draw.line(screen, PG.Color("white"), start, roundTemp)
+            PG.draw.circle(screen, PG.Color("white"), roundTemp, 5, 0)
+        return (False, self.maxLength)

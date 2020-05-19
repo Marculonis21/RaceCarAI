@@ -22,3 +22,14 @@ class CircleBoundary:
 
     def update(self):
         PG.draw.circle(self.screen, self.color, self.pos, self.radius)
+
+class Checkpoint:
+    def __init__(self, screen, color, start, end):
+        self.screen = screen
+        self.color = color
+        self.start = start
+        self.end = end
+
+    def update(self):
+        PG.draw.line(self.screen, self.color, self.start, self.end, 5)
+
