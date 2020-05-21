@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
 import pygame as PG
-import sys
 import random
+import sys
 
 from Boundary import Boundary
-from Boundary import CircleBoundary as CBoundary
 from Boundary import Checkpoint
+from Boundary import CircleBoundary as CBoundary
 from Car import Car
+from GeneticAlg import GeneticAlg
 from Ray import RayCaster
 
 MODE = 0
@@ -192,7 +193,7 @@ while True:
             textsurface = fontText.render(t, True, PG.Color('white'))
             screen.blit(textsurface, (14,40+25*index))
 
-    if(MODE == SETUP):
+    elif(MODE == SETUP):
         text = ["Right click - Add checkpoint to track",
                 "1 - Add start",
                 "2 - Add checkpoints",
@@ -211,20 +212,20 @@ while True:
                 textsurface = fontText.render(t, True, PG.Color('white'))
             screen.blit(textsurface, (14,40+25*index))
 
-    if(MODE == TRAINING):
+    elif(MODE == TRAINING):
         for car in carList:
             if(car.alive):
                 car.update_pos()
                 car.collision_detection(TRACK_IMAGE, WALL_COLOR, START_COLOR, CHECKPOINT_COLOR)
+
+                for i in range(10):
+                    angle = -90 + 20*i
+                    rayCast = rayCaster.cast(car.get_corner_points()[0], car.rotation + angle, 3, screen, visible=True)
+
             car.update(screen)
 
-            # CENTER POS je potřeba k vykreslování
-            # screen.blit(car.image, car.get_center_pos(car.position))
-            # Get_pos je střed auta
-            PG.draw.circle(screen, PG.Color('white'), car.get_pos(), 3, 0)
-
-            for point in car.get_corner_points():
-                PG.draw.circle(screen, PG.Color('white'), point, 3, 0)
+            # for point in car.get_corner_points():
+            #     PG.draw.circle(screen, PG.Color('white'), point, 3, 0)
 
     ## RAYS FOR CHECKPOINTS (PREVIEW)
     # rays = []
@@ -249,31 +250,7 @@ while True:
     '''
     if(MODE == TRAINING):
         for car in carList:
-            if(car.rotation < -360):
-                car.rotation += 360
-            if(car.rotation > 360):
-                car.rotation -= 360
-
-            # car.rel_rotate(-2)
-            car.update_pos()
-
-            # CENTER POS je potřeba k vykreslování
-            screen.blit(car.image, car.get_center_pos(car.position))
-            # Get_pos je střed auta
-            # PG.draw.circle(screen, PG.Color('white'), car.get_pos(), 5, 0)
-
-            for point in car.get_corner_points():
-                PG.draw.circle(screen, PG.Color('white'), point, 5, 0)
-
-                try:
-                    if(TRACK_IMAGE.get_at(point) == WALL_COLOR):
-                        PG.draw.circle(screen, PG.Color('red'), point, 5, 0)
-                    else:
-                        PG.draw.circle(screen, PG.Color('white'), point, 5, 0)
-                except IndexError:
-                    pass
-
-                rayCast = rayCaster.cast(car.get_corner_points()[0], car.rotation, screen, visible=True)
+            rayCast = rayCaster.cast(car.get_corner_points()[0], car.rotation, screen, visible=True)
     '''
 
     PG.display.flip()

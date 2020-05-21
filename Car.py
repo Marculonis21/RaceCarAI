@@ -65,6 +65,11 @@ class Car:
     def rel_rotate(self, angle):
         ''' ROTATE RELATIVE TO ACTUAL ROT '''
         self.rotation += angle
+        if(self.rotation < -360):
+            self.rotation += 360
+        if(self.rotation > 360):
+            self.rotation -= 360
+
         self.image = PG.transform.rotate(self.orig_image, self.rotation)
 
     def abs_rotate(self, angle):
