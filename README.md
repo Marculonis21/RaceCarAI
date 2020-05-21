@@ -1,4 +1,4 @@
-*Marek Bečvář*
+*Marek Bečvář | GYBON XA*
 
 # Maturitní projekt RaceCarAI
 
@@ -9,11 +9,13 @@ Uživatel nadefinuje trať, auto (GA) se senzory se pak učí trať projet.
 # WIP:
 * [x] Vytváření tratí
     - **asi asi budu dělat screen tratě a porovnávat pixely**
-    - možno možná dělat quadtree pro zjišťování colizí 
 * [x] Raycast pro zjištění vzdálenosti
 * [x] Auto a pohyb
-* [ ] Určování startovní pozice
-* [ ] Checkpoints
+    - **funkční uživatelské ovládání** 
+* [x] Určování startovní pozice
+* [x] Checkpoints
+    - **startovní checpoint**
+* [x] "Collision detection"
 * [ ] GA NN pro auto
 
 * [ ] NEAT???
