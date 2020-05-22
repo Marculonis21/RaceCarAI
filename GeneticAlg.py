@@ -9,7 +9,7 @@ class GeneticAlg:
 
         self.genNumber = 1
 
-        self.population = [None for size in range(popSize)]
+        self.population = [[] for size in range(popSize)]
         self.fitness = [-1 for size in range(popSize)]
 
     def avg_fitness(self):
@@ -64,7 +64,7 @@ class GeneticAlg:
         # MUTATION
         for ch in self.children:
             for i in range(len(ch)):
-                if(R.random() <= (self.mutRate/100)):
+                if(R.random() <= (self.mutRate)):
                     ch[i] = 2*R.random()-1
 
         # DISCARD THE LAST ONE - KEEP THE BEST FROM LAST GEN

@@ -16,6 +16,7 @@ class Car:
 
         self.startPosition = (0,0)
         self.startRotation = 0
+        self.startSpeed = 3
 
         self.alive = False
         self.life_counter = 0
@@ -28,8 +29,7 @@ class Car:
         self.rotation = 0
 
         self.speed = 0
-        self.wheelDir = 0
-        self.MAX_wheelDir = 50
+        self.MIN_speed = 0.5
 
     def update(self, screen):
         ''' PYGAME DRAWING '''
@@ -41,6 +41,7 @@ class Car:
         ''' POS/ROT RESET '''
         self.set_pos(self.startPosition)
         self.abs_rotate(self.startRotation)
+        self.speed = self.startSpeed
         self.checkpoints = []
         self.check_counter = 0
         self.alive = True

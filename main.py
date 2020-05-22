@@ -3,6 +3,7 @@
 import pygame as PG
 import random
 import sys
+import numpy as np
 
 from Boundary import Boundary
 from Boundary import Checkpoint
@@ -10,6 +11,7 @@ from Boundary import CircleBoundary as CBoundary
 from Car import Car
 from GeneticAlg import GeneticAlg
 from Ray import RayCaster
+import Controller as Ctrl
 
 MODE = 0
 TRACKDRAWING = 0
@@ -37,11 +39,7 @@ START_ROTATION = 0
 SETUPMODE = 0 #0 START; 1 CHECKPOINTS 
 checkpoints = []
 
-carList = [Car("data/carClipArt.jpg",50) for car in range(1)]
-# for car in carList: 
-#     car.speed = 3 
-#     car.startPosition = (random.randint(200,400),random.randint(200,400))
-#     car.set_pos(car.startPosition)
+POPULATION_SIZE = 20
 
 while True:
     screen.fill((50,50,50))
@@ -148,6 +146,8 @@ while True:
                     PG.image.save(screen, "data/track.png")
                     TRACK_IMAGE = PG.image.load("data/track.png")
 
+                    carList = [Car("data/carClipArt.jpg",50) for car in range(POPULATION_SIZE)]
+
                     # PREPARE CARS
                     for car in carList:
                         s = checkpoints[0]
@@ -155,7 +155,28 @@ while True:
                         car.startRotation = START_ROTATION
                         car.checkpoints = [0 for i in range(len(checkpoints))]
                         car.reset()
-                        car.speed = 3
+
+                    GA = GeneticAlg(POPULATION_SIZE, 0.02)
+
+                    for item in GA.population:
+                        w1 = 2*np.random.random([11,15])-1
+                        w2 = 2*np.random.random([15,10])-1
+                        w3 = 2*np.random.random([10,6])-1
+
+                        _w1 = list(w1)
+                        for y in range(len(_w1)):
+                            for x in range(len(_w1[0])):
+                                item.append(_w1[y][x])
+
+                        _w2 = list(w2)
+                        for y in range(len(_w2)):
+                            for x in range(len(_w2[0])):
+                                item.append(_w2[y][x])
+
+                        _w3 = list(w3)
+                        for y in range(len(_w3)):
+                            for x in range(len(_w3[0])):
+                                item.append(_w3[y][x])
 
                     MODE = TRAINING
 
@@ -163,6 +184,7 @@ while True:
                 if event.key == PG.K_BACKSPACE:
                     SETUPMODE = 0
                     checkpoints = []
+
                     MODE = TRACKDRAWING
 
         elif (MODE == TRAINING):
@@ -175,7 +197,6 @@ while True:
                     carList[0].rel_rotate(-15)
 
     # INPUT EVENTS
-
 
     if(MODE == TRACKDRAWING):
         aPos = PG.mouse.get_pos()
@@ -213,14 +234,25 @@ while True:
             screen.blit(textsurface, (14,40+25*index))
 
     elif(MODE == TRAINING):
-        for car in carList:
+        for index, car in enumerate(carList):
             if(car.alive):
+                info = []
+                for i in range(10):
+                    angle = -90 + 20*i
+                    ray = rayCaster.cast(car.get_corner_points()[0], car.rotation + angle, 3)
+                    info.append(ray[1])
+                    
+                info.append(car.speed)
+                output = Ctrl.controller(GA.population[index], info)
+
+                print(output)
+                quit()
                 car.update_pos()
                 car.collision_detection(TRACK_IMAGE, WALL_COLOR, START_COLOR, CHECKPOINT_COLOR)
 
-                for i in range(10):
-                    angle = -90 + 20*i
-                    rayCast = rayCaster.cast(car.get_corner_points()[0], car.rotation + angle, 3, screen, visible=True)
+                # for i in range(10):
+                #     angle = -90 + 20*i
+                #     rayCast = rayCaster.cast(car.get_corner_points()[0], car.rotation + angle, 3, screen, visible=True)
 
             car.update(screen)
 
