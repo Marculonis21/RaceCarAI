@@ -31,6 +31,8 @@ BRUSH_RADIUS = 20
 WALL_COLOR = (100,100,100)
 START_COLOR = (255,200,200)
 CHECKPOINT_COLOR = (200,200,255)
+CHECKPOINT_COLOR = []
+
 
 TRACK_IMAGE = None
 boundaries = []
@@ -119,9 +121,11 @@ while True:
                             if(SETUPMODE == 0): # START
                                 checkpoints = []
                                 START_ROTATION = fRay[0] - 90 # LEFT
-                                checkpoints.append(Checkpoint(screen, (255,200,200), p1, p2))
+                                checkpoints.append(Checkpoint(screen, START_COLOR, p1, p2))
                             else:
-                                checkpoints.append(Checkpoint(screen, (200,200,255), p1, p2))
+                                color = (200,200,255-len(checkpoints))
+                                CHECKPOINT_COLOR.append(color)
+                                checkpoints.append(Checkpoint(screen, color, p1, p2))
 
 
             if event.type == PG.KEYUP:
@@ -142,13 +146,13 @@ while True:
                     checkpoints.pop()
 
                 # CAPTURE SCREEN -> TRAINING - ENTER 
-                if event.key == PG.K_RETURN:
+                if event.key == PG.K_RETURN and len(checkpoints) > 0:
                     PG.image.save(screen, "data/track.png")
                     TRACK_IMAGE = PG.image.load("data/track.png")
 
                     carList = [Car("data/carClipArt.jpg",50) for car in range(POPULATION_SIZE)]
 
-                    # PREPARE CARS
+                    # CARS PREPARATION
                     for car in carList:
                         s = checkpoints[0]
                         car.startPosition = ((s.start[0] + s.end[0])//2, (s.start[1]+s.end[1])//2)
@@ -156,7 +160,7 @@ while True:
                         car.checkpoints = [0 for i in range(len(checkpoints))]
                         car.reset()
 
-                    GA = GeneticAlg(POPULATION_SIZE, 0.02)
+                    GA = GeneticAlg(POPULATION_SIZE, 0.03)
 
                     for item in GA.population:
                         w1 = 2*np.random.random([11,15])-1
@@ -234,8 +238,11 @@ while True:
             screen.blit(textsurface, (14,40+25*index))
 
     elif(MODE == TRAINING):
+        done = True
         for index, car in enumerate(carList):
             if(car.alive):
+                done = False
+
                 info = []
                 for i in range(10):
                     angle = -90 + 20*i
@@ -245,19 +252,48 @@ while True:
                 info.append(car.speed)
                 output = Ctrl.controller(GA.population[index], info)
 
-                print(output)
-                quit()
-                car.update_pos()
-                car.collision_detection(TRACK_IMAGE, WALL_COLOR, START_COLOR, CHECKPOINT_COLOR)
+                powerOutput = list(output[:3]) # up|stable|down
+                steerOutput = list(output[3:]) # left|front|right
 
-                # for i in range(10):
-                #     angle = -90 + 20*i
-                #     rayCast = rayCaster.cast(car.get_corner_points()[0], car.rotation + angle, 3, screen, visible=True)
+                p = powerOutput.index(max(powerOutput))
+                s = steerOutput.index(max(steerOutput))
+                # print("Power:")
+                # print(powerOutput)
+                # print("Steer:")
+                # print(steerOutput)
+
+                if (p == 0):
+                    car.speed += 0.4 * powerOutput[p]
+                elif (p == 2):
+                    car.speed -= 0.4 * powerOutput[p]
+                    if (car.speed < car.MIN_speed):
+                        car.speed = car.MIN_speed
+                        
+                if (s == 0):
+                    car.rel_rotate(3*steerOutput[s])
+                elif (p == 2):
+                    car.rel_rotate(-3*steerOutput[s])
+                
+                car.update_pos()
+                try:
+                    car.collision_detection(TRACK_IMAGE, WALL_COLOR, START_COLOR, CHECKPOINT_COLOR)
+                except IndexError:
+                    car.alive = False
+
+                # for point in car.get_corner_points():
+                #     PG.draw.circle(screen, PG.Color('white'), point, 3, 0)
 
             car.update(screen)
 
-            # for point in car.get_corner_points():
-            #     PG.draw.circle(screen, PG.Color('white'), point, 3, 0)
+        if (done):
+            print("Generation done")
+            checkLeaderboard = [car.checkpoints for car in carList]
+            for i, car in enumerate(carList):
+                GA.fitness[i] = car.calc_fitness(0.1, 50.0, 100.0, checkLeaderboard)
+                car.reset()
+
+            print("Average fitness: {}".format(GA.avg_fitness()))
+            GA.new_generation()
 
     ## RAYS FOR CHECKPOINTS (PREVIEW)
     # rays = []

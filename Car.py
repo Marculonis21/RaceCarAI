@@ -22,6 +22,8 @@ class Car:
         self.life_counter = 0
 
         self.checkpoints = []
+        self.done_checkpoints = []
+        self.lastCheckpoint = None
         self.check_counter = 0
         self.checkpoint_sleep = 2
 
@@ -29,13 +31,15 @@ class Car:
         self.rotation = 0
 
         self.speed = 0
-        self.MIN_speed = 0.5
+        self.MIN_speed = 1.5
 
     def update(self, screen):
         ''' PYGAME DRAWING '''
         screen.blit(self.image, self.get_center_pos(self.position))
         if(self.alive):
             self.life_counter += 1
+            if(self.life_counter > 500):
+                self.alive = False
 
     def reset(self):
         ''' POS/ROT RESET '''
@@ -43,8 +47,34 @@ class Car:
         self.abs_rotate(self.startRotation)
         self.speed = self.startSpeed
         self.checkpoints = []
+        self.done_checkpoints = []
         self.check_counter = 0
+        self.life_counter = 0
         self.alive = True
+
+    def calc_fitness(self, life_value, check_value, speed_value, leaderboard):
+        print("SELF:{}".format(self.checkpoints))
+        print(life_value*self.life_counter)
+        print(len(self.checkpoints)*check_value)
+        population_size = len(leaderboard)
+        print(population_size)
+
+        fitness = life_value*self.life_counter
+        fitness += len(self.checkpoints)*check_value
+
+        for loop in range(len(self.checkpoints)):
+            ch = [_ch for _ch in leaderboard if len(_ch) >= loop+1]
+
+            if not (len(ch) > 1): break
+                
+            ch = sorted(ch, key = lambda x: x[loop])
+
+            rank = ch.index(self.checkpoints)
+            fitness += speed_value - rank*(speed_value/population_size)
+            print(ch)
+
+        print(fitness)
+        return int(fitness)
 
     def update_pos(self):
         ''' CAR MOVEMENT '''
@@ -119,24 +149,38 @@ class Car:
 
         for index, p in enumerate(testPoints):
             c = TRACK_IMAGE.get_at(p)
-            if(c in colliders):
+
+            if(c in colliders or c in CHECKPOINT_COLOR):
                 if (c == WALL_COLOR):
                     self.alive = False
                     print("WALL")
                     print(self.checkpoints)
                     return -1
-                elif (c == START_COLOR and index == 0 and self.checkpoint_sleep < self.check_counter):
+
+                elif (c == START_COLOR and 
+                      index == 0 and 
+                      self.lastCheckpoint != "START" and 
+                      self.checkpoint_sleep < self.check_counter):
                     self.check_counter = 0
                     self.checkpoints.append(self.life_counter)
+                    self.lastCheckpoint = "START"
+                    self.done_checkpoints = []
                     print("START")
                     print(self.life_counter)
                     return 1
-                elif (c == CHECKPOINT_COLOR and index == 0 and self.checkpoint_sleep < self.check_counter):
+
+                elif (c in CHECKPOINT_COLOR and 
+                      c not in self.done_checkpoints and
+                      index == 0 and 
+                      self.checkpoint_sleep < self.check_counter):
                     self.check_counter = 0
                     self.checkpoints.append(self.life_counter)
+                    self.lastCheckpoint = "CHECK"
+                    self.done_checkpoints.append(c)
                     print("CHECK")
                     print(self.life_counter)
                     return 2
+
                 else:
                     return 0
 

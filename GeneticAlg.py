@@ -20,8 +20,9 @@ class GeneticAlg:
 
     def new_generation(self):
         ''' MAKING NEW GENERATION '''
+        print(len(self.population))
         self.parents = []
-        THEBestOne = self.fitness.index(max(self.fitness))
+        THEBestOne = self.population[self.fitness.index(max(self.fitness))]
         
         # PARENTS ROULETTE
         nMax = sum(self.fitness)
@@ -33,10 +34,11 @@ class GeneticAlg:
                 nTest += self.fitness[loop]
 
                 if(x <= nTest):
-                    self.parents.append(self.species[loop])
+                    self.parents.append(self.population[loop])
                     break
 
 
+        print(len(self.parents))
         # MATING POOL
         self.children = []
         for loop in range(int(self.popSize//2)):
@@ -47,7 +49,7 @@ class GeneticAlg:
 
             ch1 = []
             ch2 = []
-            for i in range(len(self.species[0])):
+            for i in range(len(self.population[0])):
 
                 # CROSSOVER
                 x = R.choice([0,1])
@@ -68,7 +70,9 @@ class GeneticAlg:
                     ch[i] = 2*R.random()-1
 
         # DISCARD THE LAST ONE - KEEP THE BEST FROM LAST GEN
+        print(len(self.children))
         self.children.pop()
         self.children.append(THEBestOne)
-        self.species = self.children
-        self.genCounter += 1
+        self.population = self.children
+        print(len(self.population))
+        self.genNumber += 1
