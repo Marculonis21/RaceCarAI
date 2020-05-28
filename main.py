@@ -43,13 +43,13 @@ START_COLOR = (255,200,200)
 CHECKPOINT_COLOR = (200,200,255)
 CHECKPOINT_COLOR = []
 
-NETWORK_ARCHITECTUR = [6,10,8,6] 
+NETWORK_ARCHITECTUR = [6,8,4,2] 
 # NETWORK_ARCHITECTUR = [5,12,8,6] 
 
 test_iteration = 0 
 test_mainIter = 0
 test_change = True
-testing = True
+testing = False
 TESTING_ARCHITECTUR = [[6,12,8,6],
                        [6,16,12,6],
                        [6,18,6]]
@@ -309,28 +309,23 @@ while True:
                 info.append(car.info_distance/500)
                 output = Ctrl.controller(GA.population[index], info, NETWORK_ARCHITECTUR)
 
-                powerOutput = list(output[:3]) # up|stable|down
-                steerOutput = list(output[3:]) # left|front|right
+                powerOutput = list(output[0]) # up|stable|down
+                steerOutput = list(output[1]) # left|front|right
 
-                p = powerOutput.index(max(powerOutput))
-                s = steerOutput.index(max(steerOutput))
-                # print("Power:")
-                # print(powerOutput)
-                # print("Steer:")
-                # print(steerOutput)
+                if (powerOutput > 0.25):
+                    car.speed += 0.4 * powerOutput
+                elif (powerOutput < -0.25):
+                    car.speed += -0.4 * powerOutput
+                else:
+                    pass
 
-                if (p == 0):
-                    car.speed += 0.4 * powerOutput[p]
-                elif (p == 2):
-                    car.speed -= 0.4 * powerOutput[p]
-                    if (car.speed < car.MIN_speed):
-                        car.speed = car.MIN_speed
-                        
-                if (s == 0):
-                    car.rel_rotate(4*steerOutput[s])
-                elif (p == 2):
-                    car.rel_rotate(-4*steerOutput[s])
-                
+                if (steerOutput > 0.25):
+                    car.rel_rotate(4*steerOutput)
+                elif (steerOutput < -0.25):
+                    car.rel_rotate(-4*steerOutput)
+                else:
+                    pass
+                    
                 car.update_pos()
 
                 try:

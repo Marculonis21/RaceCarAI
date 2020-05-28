@@ -3,11 +3,11 @@
 import numpy as np
 from GeneticAlg import GeneticAlg
 
-def nonlin(x, deriv=False):
-    if(deriv):
-        return(x*(1-x)) 
-
+def sigmoid(x):
     return 1/(1+np.exp(-x))
+
+def tanh(x):
+    return np.tanh(x)
 
 def controller(player, observation, network):
     ''' PLAYER CONTROLLER '''
@@ -25,7 +25,7 @@ def controller(player, observation, network):
 
         w = np.array(w)
 
-        layer = nonlin(np.dot(layer,w))
+        layer = tanh(np.dot(layer,w))
     end = layer
 
     return end
