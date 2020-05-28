@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 
+from matplotlib import pyplot as plt
+import numpy as np
 import pygame as PG
 import random
 import sys
-import numpy as np
-
+import time
+import pickle
+ 
 from Boundary import Boundary
 from Boundary import Checkpoint
 from Boundary import CircleBoundary as CBoundary
@@ -12,6 +15,13 @@ from Car import Car
 from GeneticAlg import GeneticAlg
 from Ray import RayCaster
 import Controller as Ctrl
+
+def plotValues(v1, v2, v3):
+    plt.cla()
+
+    plt.plot(v1)
+    plt.plot(v2)
+    plt.plot(v3)
 
 MODE = 0
 TRACKDRAWING = 0
@@ -33,6 +43,16 @@ START_COLOR = (255,200,200)
 CHECKPOINT_COLOR = (200,200,255)
 CHECKPOINT_COLOR = []
 
+NETWORK_ARCHITECTUR = [6,10,8,6] 
+# NETWORK_ARCHITECTUR = [5,12,8,6] 
+
+test_iteration = 0 
+test_mainIter = 0
+test_change = True
+testing = True
+TESTING_ARCHITECTUR = [[6,12,8,6],
+                       [6,16,12,6],
+                       [6,18,6]]
 
 TRACK_IMAGE = None
 boundaries = []
@@ -41,7 +61,7 @@ START_ROTATION = 0
 SETUPMODE = 0 #0 START; 1 CHECKPOINTS 
 checkpoints = []
 
-POPULATION_SIZE = 20
+POPULATION_SIZE = 50 
 
 while True:
     screen.fill((50,50,50))
@@ -75,7 +95,7 @@ while True:
             # MOUSE WHEEL EVENTS
             if event.type == PG.MOUSEBUTTONDOWN:
                 if event.button == 4:
-                    if(BRUSH_RADIUS < 50):
+                    if(BRUSH_RADIUS < 100):
                         BRUSH_RADIUS += 1
                 elif event.button == 5:
                     if(BRUSH_RADIUS > 5):
@@ -150,7 +170,7 @@ while True:
                     PG.image.save(screen, "data/track.png")
                     TRACK_IMAGE = PG.image.load("data/track.png")
 
-                    carList = [Car("data/carClipArt.jpg",50) for car in range(POPULATION_SIZE)]
+                    carList = [Car("data/carClipArt.jpg", 50) for car in range(POPULATION_SIZE)]
 
                     # CARS PREPARATION
                     for car in carList:
@@ -160,28 +180,41 @@ while True:
                         car.checkpoints = [0 for i in range(len(checkpoints))]
                         car.reset()
 
-                    GA = GeneticAlg(POPULATION_SIZE, 0.03)
+                    if not (testing):
+                        GA = GeneticAlg(POPULATION_SIZE, 0.025)
+                        for item in GA.population:
 
-                    for item in GA.population:
-                        w1 = 2*np.random.random([11,15])-1
-                        w2 = 2*np.random.random([15,10])-1
-                        w3 = 2*np.random.random([10,6])-1
+                            NN = NETWORK_ARCHITECTUR 
+                            for layer in range(len(NN)):
+                                if (layer == len(NN) - 1): break
+                                    
+                                w = 2*np.random.random([NN[layer], NN[layer + 1]]) - 1
+                                _w = list(w)
+                                for y in range(len(_w)):
+                                    for x in range(len(_w[0])):
+                                        item.append(_w[y][x])
+                            
+                        # w1 = 2*np.random.random([11,15])-1
+                        # w2 = 2*np.random.random([15,10])-1
+                        # w3 = 2*np.random.random([10,6])-1
 
-                        _w1 = list(w1)
-                        for y in range(len(_w1)):
-                            for x in range(len(_w1[0])):
-                                item.append(_w1[y][x])
+                        # _w1 = list(w1)
+                        # for y in range(len(_w1)):
+                        #     for x in range(len(_w1[0])):
+                        #         item.append(_w1[y][x])
 
-                        _w2 = list(w2)
-                        for y in range(len(_w2)):
-                            for x in range(len(_w2[0])):
-                                item.append(_w2[y][x])
+                        # _w2 = list(w2)
+                        # for y in range(len(_w2)):
+                        #     for x in range(len(_w2[0])):
+                        #         item.append(_w2[y][x])
 
-                        _w3 = list(w3)
-                        for y in range(len(_w3)):
-                            for x in range(len(_w3[0])):
-                                item.append(_w3[y][x])
+                        # _w3 = list(w3)
+                        # for y in range(len(_w3)):
+                        #     for x in range(len(_w3[0])):
+                        #         item.append(_w3[y][x])
 
+                    plt.style.use('ggplot')
+                    episodes = [[],[],[]]
                     MODE = TRAINING
 
                 # BACK TO TRACK DRAWING - BACKSPACE
@@ -238,19 +271,43 @@ while True:
             screen.blit(textsurface, (14,40+25*index))
 
     elif(MODE == TRAINING):
+        if (testing and test_change):
+            print("Iter: {}".format(test_mainIter))
+
+            GA = GeneticAlg(POPULATION_SIZE, 0.025)
+            for item in GA.population:
+                NN = TESTING_ARCHITECTUR[test_iteration]
+
+                for layer in range(len(NN)):
+                    if (layer == len(NN) - 1): break
+                        
+                    w = 2*np.random.random([NN[layer], NN[layer + 1]]) - 1
+                    _w = list(w)
+                    for y in range(len(_w)):
+                        for x in range(len(_w[0])):
+                            item.append(_w[y][x])
+
+            test_mainIter += 1
+            if (test_mainIter == 2):
+                test_mainIter = 0
+                test_iteration += 1
+                
+            test_change = False
+                            
         done = True
         for index, car in enumerate(carList):
             if(car.alive):
                 done = False
 
                 info = []
-                for i in range(10):
-                    angle = -90 + 20*i
-                    ray = rayCaster.cast(car.get_corner_points()[0], car.rotation + angle, 3)
-                    info.append(ray[1])
+                for i in range(5):
+                    angle = -60 + 30*i
+                    ray = rayCaster.cast(car.get_corner_points()[0], car.rotation + angle, 2, screen, True)
+                    info.append(ray[1]/200)
                     
-                info.append(car.speed)
-                output = Ctrl.controller(GA.population[index], info)
+                # info.append(car.speed)
+                info.append(car.info_distance/500)
+                output = Ctrl.controller(GA.population[index], info, NETWORK_ARCHITECTUR)
 
                 powerOutput = list(output[:3]) # up|stable|down
                 steerOutput = list(output[3:]) # left|front|right
@@ -270,11 +327,12 @@ while True:
                         car.speed = car.MIN_speed
                         
                 if (s == 0):
-                    car.rel_rotate(3*steerOutput[s])
+                    car.rel_rotate(4*steerOutput[s])
                 elif (p == 2):
-                    car.rel_rotate(-3*steerOutput[s])
+                    car.rel_rotate(-4*steerOutput[s])
                 
                 car.update_pos()
+
                 try:
                     car.collision_detection(TRACK_IMAGE, WALL_COLOR, START_COLOR, CHECKPOINT_COLOR)
                 except IndexError:
@@ -286,41 +344,47 @@ while True:
             car.update(screen)
 
         if (done):
-            print("Generation done")
+            avg_car_speed = 0
             checkLeaderboard = [car.checkpoints for car in carList]
             for i, car in enumerate(carList):
-                GA.fitness[i] = car.calc_fitness(0.1, 50.0, 100.0, checkLeaderboard)
+                GA.fitness[i] = car.calc_fitness(0.25, 50.0, 100.0, checkLeaderboard)
+                avg_car_speed += car.speed_sum/car.life_counter
                 car.reset()
 
-            print("Average fitness: {}".format(GA.avg_fitness()))
-            GA.new_generation()
+            last_best, avg_fitness, min_fit, max_fit = GA.new_generation()
+            episodes[0].append(avg_fitness)
+            episodes[1].append(min_fit)
+            episodes[2].append(max_fit)
 
-    ## RAYS FOR CHECKPOINTS (PREVIEW)
-    # rays = []
-    # angle = 0
-    # for i in range(60):
-    #     angle += 6
-    #     rayInfo = [angle, rayCaster.cast(PG.mouse.get_pos(),angle,2,screen,True)]
-    #     if(rayInfo[1][0]):
-    #         rays.append(rayInfo)
+            plt.cla()
+            plt.title('Training')
+            plt.xlabel('Episode')
+            plt.ylabel('Fitness')
+            plt.plot(episodes[0], label='Average fitness')
+            plt.plot(episodes[1], label='Min-fitness')
+            plt.plot(episodes[2], label='Max-fitness')
+            plt.legend(loc='upper left', fontsize=9)
+            plt.tight_layout()
+            plt.pause(0.1)
 
-    # if(len(rays) > 0):
-    #     rays = sorted(rays, key=lambda x: x[1][1])
-    #     fRay = rays[0]
+            if not (testing):
+                saveFile = open("./saves/saveFile-e{}-{}-max{}.pickle".format(len(episodes[0]),str(NETWORK_ARCHITECTUR),max_fit), "w+b")
+            else:
+                saveFile = open("./saves/saveFile-iter{}-e{}-{}-max{}.pickle".format(test_mainIter,len(episodes[0]),str(TESTING_ARCHITECTUR[test_iteration]),max_fit), "w+b")
 
-    #     p1 = fRay[1][2]
-    #     ray = rayCaster.cast(p1,fRay[0]+180,resolution=2) 
-    #     if(len(ray) > 2):
-    #         p2 = ray[2]
-    #         PG.draw.line(screen, (200,200,255), p1, p2, 5)
+            pickle.dump(last_best, saveFile)
+            saveFile.close()
 
 
-    '''
-    if(MODE == TRAINING):
-        for car in carList:
-            rayCast = rayCaster.cast(car.get_corner_points()[0], car.rotation, screen, visible=True)
-    '''
+            if (testing and len(episodes[0]) > 50):
+                plt.savefig("./saves/t{}-e{}-{}-max{}.png".format(test_mainIter,len(episodes[0]),str(TESTING_ARCHITECTUR[test_iteration]), max_fit))
+                episodes = [[],[],[]]
+                test_change = True
+                print("NEW ITERATION {}".format(str(TESTING_ARCHITECTUR[test_iteration])))
+
 
     PG.display.flip()
 
     clock.tick(60)
+
+plt.show()

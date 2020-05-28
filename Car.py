@@ -20,6 +20,7 @@ class Car:
 
         self.alive = False
         self.life_counter = 0
+        self.distance = 0
 
         self.checkpoints = []
         self.done_checkpoints = []
@@ -31,15 +32,24 @@ class Car:
         self.rotation = 0
 
         self.speed = 0
-        self.MIN_speed = 1.5
+        self.MIN_speed = 2.5 
+
+        self.speed_sum = 0
 
     def update(self, screen):
         ''' PYGAME DRAWING '''
-        screen.blit(self.image, self.get_center_pos(self.position))
         if(self.alive):
+            screen.blit(self.image, self.get_center_pos(self.position))
             self.life_counter += 1
-            if(self.life_counter > 500):
+            if(self.life_counter > 1000):
                 self.alive = False
+        else:
+            disabled = self.image.copy()
+            disabled.fill((50, 50, 50, 210), None, PG.BLEND_RGBA_MULT)
+            disabled.fill((0,0,0) + (0,) , None, PG.BLEND_RGBA_ADD)
+            
+            screen.blit(disabled, self.get_center_pos(self.position))
+
 
     def reset(self):
         ''' POS/ROT RESET '''
@@ -50,36 +60,45 @@ class Car:
         self.done_checkpoints = []
         self.check_counter = 0
         self.life_counter = 0
+
+        self.speed_sum = 0
+        self.distance = 0
+        self.info_distance = 0
         self.alive = True
 
     def calc_fitness(self, life_value, check_value, speed_value, leaderboard):
-        print("SELF:{}".format(self.checkpoints))
-        print(life_value*self.life_counter)
-        print(len(self.checkpoints)*check_value)
         population_size = len(leaderboard)
-        print(population_size)
 
-        fitness = life_value*self.life_counter
+        # fitness = life_value*self.life_counter
+        fitness = 0
+        fitness += self.distance*life_value
         fitness += len(self.checkpoints)*check_value
 
         for loop in range(len(self.checkpoints)):
             ch = [_ch for _ch in leaderboard if len(_ch) >= loop+1]
 
-            if not (len(ch) > 1): break
+            if not (len(ch) > 1): 
+                fitness += speed_value
+                continue
                 
             ch = sorted(ch, key = lambda x: x[loop])
 
             rank = ch.index(self.checkpoints)
-            fitness += speed_value - rank*(speed_value/population_size)
-            print(ch)
+            fitness += speed_value - rank*(speed_value/len(ch))
 
-        print(fitness)
         return int(fitness)
 
     def update_pos(self):
         ''' CAR MOVEMENT '''
-        self.position = (self.position[0] + (self.speed * math.cos(math.radians(self.rotation))),
-                         self.position[1] - (self.speed * math.sin(math.radians(self.rotation))))
+        dx = (self.speed * math.cos(math.radians(self.rotation)))
+        dy = (self.speed * math.sin(math.radians(self.rotation)))
+
+        self.distance += math.sqrt(dx**2 + dy**2)
+        self.info_distance = self.distance
+        self.speed_sum += self.speed
+        
+        self.position = (self.position[0] + dx,
+                         self.position[1] - dy)
 
     def set_pos(self, pos):
         ''' POS SETTER '''
@@ -153,8 +172,6 @@ class Car:
             if(c in colliders or c in CHECKPOINT_COLOR):
                 if (c == WALL_COLOR):
                     self.alive = False
-                    print("WALL")
-                    print(self.checkpoints)
                     return -1
 
                 elif (c == START_COLOR and 
@@ -165,8 +182,7 @@ class Car:
                     self.checkpoints.append(self.life_counter)
                     self.lastCheckpoint = "START"
                     self.done_checkpoints = []
-                    print("START")
-                    print(self.life_counter)
+                    self.info_distance = 0
                     return 1
 
                 elif (c in CHECKPOINT_COLOR and 
@@ -177,8 +193,6 @@ class Car:
                     self.checkpoints.append(self.life_counter)
                     self.lastCheckpoint = "CHECK"
                     self.done_checkpoints.append(c)
-                    print("CHECK")
-                    print(self.life_counter)
                     return 2
 
                 else:
