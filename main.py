@@ -3,10 +3,10 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import pygame as PG
-import random
 import sys
-import time
 import pickle
+import math
+import os
  
 from Boundary import Boundary
 from Boundary import Checkpoint
@@ -43,34 +43,38 @@ START_COLOR = (255,200,200)
 CHECKPOINT_COLOR = (200,200,255)
 CHECKPOINT_COLOR = []
 
-NETWORK_ARCHITECTUR = [6,8,4,2] 
-# NETWORK_ARCHITECTUR = [5,12,8,6] 
+NETWORK_ARCHITECTURE = [6,8,4,2] 
+# NETWORK_ARCHITECTURE = [5,12,8,6] 
 
 test_iteration = 0 
 test_mainIter = 0
 test_change = True
-testing = False
-TESTING_ARCHITECTUR = [[6,12,8,6],
-                       [6,16,12,6],
-                       [6,18,6]]
+
+testing = True
+test_episodes = 50
+TESTING_ARCHITECTURE = [[6,8,4,2],
+                       [6,10,5,2],
+                       [6,16,8,2]]
 
 TRACK_IMAGE = None
 boundaries = []
+START_POSITION = (0,0) 
 START_ROTATION = 0
 
-SETUPMODE = 0 #0 START; 1 CHECKPOINTS 
+SETUPMODE = 0 #0 START; #1 START_ROTATION; 2 CHECKPOINTS 
 checkpoints = []
 
-POPULATION_SIZE = 50 
+POPULATION_SIZE = 50
 
+### MAIN PART ###
 while True:
     screen.fill((50,50,50))
 
     for b in boundaries:
         b.update()
-
     for c in checkpoints:
         c.update()
+
 
     # INPUT EVENTS
     for event in PG.event.get():
@@ -80,6 +84,11 @@ while True:
 
             # EXIT - ESCAPE
             if event.key == PG.K_ESCAPE:
+                try:
+                    plt.savefig("./saves/ended-e{}-{}-max{}.png".format(len(episodes[0]),str(NETWORK_ARCHITECTURE), max_fit))
+                except:
+                    pass
+
                 sys.exit()
 
         if(MODE == TRACKDRAWING):
@@ -140,9 +149,25 @@ while True:
 
                             if(SETUPMODE == 0): # START
                                 checkpoints = []
-                                START_ROTATION = fRay[0] - 90 # LEFT
+                                START_POSITION = ((p1[0] + p2[0])//2, (p1[1]+p2[1])//2)
+
                                 checkpoints.append(Checkpoint(screen, START_COLOR, p1, p2))
-                            else:
+
+                                SETUPMODE = 1
+
+                            elif (SETUPMODE == 1):
+                                mPos = PG.mouse.get_pos()
+                                dx = START_POSITION[0] - mPos[0]
+                                dy = START_POSITION[1] - mPos[1]
+                                rads = math.atan2(-dy,dx)
+                                rads %= 2*math.pi
+                                degs = math.degrees(rads) + 180
+
+                                START_ROTATION = degs
+
+                                SETUPMODE = 2
+
+                            elif(SETUPMODE == 2):
                                 color = (200,200,255-len(checkpoints))
                                 CHECKPOINT_COLOR.append(color)
                                 checkpoints.append(Checkpoint(screen, color, p1, p2))
@@ -155,7 +180,7 @@ while True:
 
                 # SETUP ADD CHECKPOINTS
                 if event.key == PG.K_KP2:
-                    SETUPMODE = 1
+                    SETUPMODE = 2
 
                 # SETUP CLEAR - N
                 if event.key == PG.K_n:
@@ -166,7 +191,7 @@ while True:
                     checkpoints.pop()
 
                 # CAPTURE SCREEN -> TRAINING - ENTER 
-                if event.key == PG.K_RETURN and len(checkpoints) > 0:
+                if event.key == PG.K_RETURN and len(checkpoints) > 0 and SETUPMODE != 1:
                     PG.image.save(screen, "data/track.png")
                     TRACK_IMAGE = PG.image.load("data/track.png")
 
@@ -174,8 +199,7 @@ while True:
 
                     # CARS PREPARATION
                     for car in carList:
-                        s = checkpoints[0]
-                        car.startPosition = ((s.start[0] + s.end[0])//2, (s.start[1]+s.end[1])//2)
+                        car.startPosition = START_POSITION
                         car.startRotation = START_ROTATION
                         car.checkpoints = [0 for i in range(len(checkpoints))]
                         car.reset()
@@ -184,7 +208,7 @@ while True:
                         GA = GeneticAlg(POPULATION_SIZE, 0.025)
                         for item in GA.population:
 
-                            NN = NETWORK_ARCHITECTUR 
+                            NN = NETWORK_ARCHITECTURE 
                             for layer in range(len(NN)):
                                 if (layer == len(NN) - 1): break
                                     
@@ -194,25 +218,6 @@ while True:
                                     for x in range(len(_w[0])):
                                         item.append(_w[y][x])
                             
-                        # w1 = 2*np.random.random([11,15])-1
-                        # w2 = 2*np.random.random([15,10])-1
-                        # w3 = 2*np.random.random([10,6])-1
-
-                        # _w1 = list(w1)
-                        # for y in range(len(_w1)):
-                        #     for x in range(len(_w1[0])):
-                        #         item.append(_w1[y][x])
-
-                        # _w2 = list(w2)
-                        # for y in range(len(_w2)):
-                        #     for x in range(len(_w2[0])):
-                        #         item.append(_w2[y][x])
-
-                        # _w3 = list(w3)
-                        # for y in range(len(_w3)):
-                        #     for x in range(len(_w3[0])):
-                        #         item.append(_w3[y][x])
-
                     plt.style.use('ggplot')
                     episodes = [[],[],[]]
                     MODE = TRAINING
@@ -261,10 +266,28 @@ while True:
         textsurface = fontHeader.render("Track Setup:", True, (230,230,255))
         screen.blit(textsurface, (10,10))
 
+        if (SETUPMODE == 1):
+            PG.draw.line(screen, (255,100,100), START_POSITION, PG.mouse.get_pos(), 3)
+
+            mPos = PG.mouse.get_pos()
+            dx = START_POSITION[0] - mPos[0]
+            dy = START_POSITION[1] - mPos[1]
+            rads = math.atan2(-dy,dx)
+            rads %= 2*math.pi
+            degs = math.degrees(rads) + 180
+
+            X_1 = mPos[0] + (math.cos(math.radians(degs + 225)) * 20)
+            Y_1 = mPos[1] - (math.sin(math.radians(degs + 225)) * 20)
+            X_2 = mPos[0] + (math.cos(math.radians(degs + 135)) * 20)
+            Y_2 = mPos[1] - (math.sin(math.radians(degs + 135)) * 20)
+
+            PG.draw.line(screen, (255,100,100), PG.mouse.get_pos(), (X_1,Y_1), 3)
+            PG.draw.line(screen, (255,100,100), PG.mouse.get_pos(), (X_2,Y_2), 3)
+            
         for index, t in enumerate(text):
-            if(index == 1 and SETUPMODE == 0):
+            if((index == 1) and (SETUPMODE == 0 or SETUPMODE == 1)):
                 textsurface = fontText.render(t, True, (255,200,200))
-            elif(index == 2 and SETUPMODE == 1):
+            elif(index == 2 and SETUPMODE == 2):
                 textsurface = fontText.render(t, True, (200,200,255))
             else:
                 textsurface = fontText.render(t, True, PG.Color('white'))
@@ -276,7 +299,7 @@ while True:
 
             GA = GeneticAlg(POPULATION_SIZE, 0.025)
             for item in GA.population:
-                NN = TESTING_ARCHITECTUR[test_iteration]
+                NN = TESTING_ARCHITECTURE[test_iteration]
 
                 for layer in range(len(NN)):
                     if (layer == len(NN) - 1): break
@@ -305,24 +328,23 @@ while True:
                     ray = rayCaster.cast(car.get_corner_points()[0], car.rotation + angle, 2, screen, True)
                     info.append(ray[1]/200)
                     
-                # info.append(car.speed)
                 info.append(car.info_distance/500)
-                output = Ctrl.controller(GA.population[index], info, NETWORK_ARCHITECTUR)
+                output = Ctrl.controller(GA.population[index], info, NETWORK_ARCHITECTURE)
 
-                powerOutput = list(output[0]) # up|stable|down
-                steerOutput = list(output[1]) # left|front|right
+                powerOutput = output[0] # up|stable|down
+                steerOutput = output[1] # left|front|right
 
                 if (powerOutput > 0.25):
                     car.speed += 0.4 * powerOutput
                 elif (powerOutput < -0.25):
-                    car.speed += -0.4 * powerOutput
+                    car.speed += 0.4 * powerOutput
                 else:
                     pass
 
-                if (steerOutput > 0.25):
-                    car.rel_rotate(4*steerOutput)
-                elif (steerOutput < -0.25):
-                    car.rel_rotate(-4*steerOutput)
+                if (steerOutput > 0.1):
+                    car.rel_rotate(5*steerOutput)
+                elif (steerOutput < -0.1):
+                    car.rel_rotate(5*steerOutput)
                 else:
                     pass
                     
@@ -333,6 +355,7 @@ while True:
                 except IndexError:
                     car.alive = False
 
+                ## Collision points drawing
                 # for point in car.get_corner_points():
                 #     PG.draw.circle(screen, PG.Color('white'), point, 3, 0)
 
@@ -342,7 +365,7 @@ while True:
             avg_car_speed = 0
             checkLeaderboard = [car.checkpoints for car in carList]
             for i, car in enumerate(carList):
-                GA.fitness[i] = car.calc_fitness(0.25, 50.0, 100.0, checkLeaderboard)
+                GA.fitness[i] = car.calc_fitness(0.75, 50.0, 100.0, checkLeaderboard)
                 avg_car_speed += car.speed_sum/car.life_counter
                 car.reset()
 
@@ -362,24 +385,33 @@ while True:
             plt.tight_layout()
             plt.pause(0.1)
 
-            if not (testing):
-                saveFile = open("./saves/saveFile-e{}-{}-max{}.pickle".format(len(episodes[0]),str(NETWORK_ARCHITECTUR),max_fit), "w+b")
-            else:
-                saveFile = open("./saves/saveFile-iter{}-e{}-{}-max{}.pickle".format(test_mainIter,len(episodes[0]),str(TESTING_ARCHITECTUR[test_iteration]),max_fit), "w+b")
+            while True:
+                try:
+                    if not (testing):
+                        path = str(NETWORK_ARCHITECTURE).replace(" ", "_")
+                        saveFile = open("./saves/test-{}/saveFile-e{}-{}-max{}.pickle".format(path,len(episodes[0]),str(NETWORK_ARCHITECTURE),max_fit), "w+b")
+                    else:
+                        path = str(TESTING_ARCHITECTURE[test_iteration]).replace(" ", "_")
+                        saveFile = open("./saves/test-{}/saveFile-iter{}-e{}-{}-max{}.pickle".format(path,test_mainIter,len(episodes[0]),str(TESTING_ARCHITECTURE[test_iteration]),max_fit), "w+b")
+                    break
+                except:
+                    if not (testing):
+                        path = str(NETWORK_ARCHITECTURE).replace(" ", "_")
+                        os.system('mkdir saves/test-{}'.format(path))
+                    else:
+                        path = str(TESTING_ARCHITECTURE[test_iteration]).replace(" ", "_")
+                        os.system('mkdir saves/test-{}'.format(path))
 
             pickle.dump(last_best, saveFile)
             saveFile.close()
 
-
-            if (testing and len(episodes[0]) > 50):
-                plt.savefig("./saves/t{}-e{}-{}-max{}.png".format(test_mainIter,len(episodes[0]),str(TESTING_ARCHITECTUR[test_iteration]), max_fit))
+            if (testing and len(episodes[0]) > test_episodes):
+                plt.savefig("./saves/t{}-e{}-{}-max{}.png".format(test_mainIter,len(episodes[0]),str(TESTING_ARCHITECTURE[test_iteration]), max_fit))
                 episodes = [[],[],[]]
                 test_change = True
-                print("NEW ITERATION {}".format(str(TESTING_ARCHITECTUR[test_iteration])))
+                print("NEW ITERATION {}".format(str(TESTING_ARCHITECTURE[test_iteration])))
 
 
     PG.display.flip()
 
     clock.tick(60)
-
-plt.show()

@@ -90,6 +90,9 @@ class Car:
 
     def update_pos(self):
         ''' CAR MOVEMENT '''
+        if (self.speed < self.MIN_speed):
+            self.speed = self.MIN_speed
+
         dx = (self.speed * math.cos(math.radians(self.rotation)))
         dy = (self.speed * math.sin(math.radians(self.rotation)))
 
