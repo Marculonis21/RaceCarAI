@@ -23,6 +23,7 @@ def plotValues(v1, v2, v3):
     plt.plot(v2)
     plt.plot(v3)
 
+
 MODE = 0
 TRACKDRAWING = 0
 SETUP = 1

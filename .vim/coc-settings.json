@@ -1,8 +1,8 @@
 {
   "python.linting.enabled": false,
   "python.diagnostics.sourceMapsEnabled": true,
-  "python.linting.flake8Enabled": false,
+  "python.linting.flake8Enabled": true,
   "python.linting.mypyEnabled": false,
-  "python.linting.pep8Enabled": true,
+  "python.linting.pep8Enabled": false,
   "python.linting.pylintEnabled": false
 }
