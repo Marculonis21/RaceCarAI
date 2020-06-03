@@ -11,6 +11,8 @@ saves/
 # Vim extension
 *.vim
 
+.vim/
+
 # Distribution / packaging
 .Python
 build/
