@@ -1,0 +1,63 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[margin=3cm]{geometry}
+\usepackage{graphicx}
+\usepackage{blindtext}
+\usepackage{titling}
+\usepackage{titlesec}
+
+\titleformat{\section}
+{\Large\bfseries}
+{\Roman{section}.}
+{0.5em}
+{}
+
+\titleformat{\subsection}
+{\center\large\bfseries}
+{\Roman{subsection}}
+{0.5em}
+{}
+
+\titlespacing{\subsection}
+{2em}{2.5em}{0.5em}
+
+\title{Využití umělé inteligence a genetického algoritmu pro autonomní řízení}
+\author{Marek Bečvář}
+\date{Červen 2020}
+
+\renewcommand{\maketitle}
+{
+    \begin{center}
+        \vspace*{2cm}
+        \LARGE{\textbf{\thetitle}}\\
+        \vspace{0.5cm}
+        \Large{\textbf{\theauthor}}\\
+        \vspace{0.5cm}
+        \normalsize{\thedate}
+    \end{center}
+}
+
+
+\begin{document}
+    \maketitle
+
+    \vspace{0.5cm}
+
+    \section{Motivace}
+        \blindtext
+
+    \section{O projektu}
+        \begin{center}
+            \blindtext
+        \end{center}
+
+    \subsection{Neuronová síť}
+        asdfadsfsadf\\
+        asdfadsf
+
+    \subsection{Funkce}
+        \blindtext
+
+
+\end{document}
+
