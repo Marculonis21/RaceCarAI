@@ -1,10 +1,16 @@
 \documentclass[a4paper,12pt]{article}
 
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+
 \usepackage[margin=3cm]{geometry}
 \usepackage{graphicx}
 \usepackage{blindtext}
 \usepackage{titling}
 \usepackage{titlesec}
+
+\usepackage{animate}
 
 \titleformat{\section}
 {\Large\bfseries}
@@ -44,7 +50,7 @@
     \vspace{0.5cm}
 
     \section{Motivace}
-        \blindtext
+        \animategraphics[controls=play,loop]{20}{gif/clever_anim-}{0}{100}
 
     \section{O projektu}
         \begin{center}
@@ -57,7 +63,7 @@
 
     \subsection{Funkce}
         \blindtext
-
+        Neuronová s9t, kter8 by se jinak v;bec nezobrazovala
 
 \end{document}
 
