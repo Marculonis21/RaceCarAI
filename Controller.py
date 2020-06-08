@@ -14,6 +14,7 @@ def controller(player, observation, network):
 
     layer = np.array(observation)
 
+    # FOR ALL LAYERS - PREVIOUS WITH WEIGHTS TO THE NEXT ONE - TILL END
     for l in range(len(network)):
         if (l == len(network) - 1): break
             
@@ -26,6 +27,7 @@ def controller(player, observation, network):
         w = np.array(w)
 
         layer = tanh(np.dot(layer,w))
+
     end = layer
 
     return end

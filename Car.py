@@ -5,6 +5,8 @@ import math
 
 class Car:
     def __init__(self, path, size):
+
+        # CAR IMAGE
         self.orig_image = PG.image.load(path)
 
         w = self.orig_image.get_rect().size[1]
@@ -14,27 +16,30 @@ class Car:
         self.orig_image = PG.transform.scale(self.orig_image, (size,int(size*r)))
         self.image = self.orig_image.copy()
 
+
+        # ATTRIBUTES
         self.startPosition = (0,0)
         self.startRotation = 0
         self.startSpeed = 3
 
-        self.alive = False
-        self.life_counter = 0
-        self.distance = 0
-
-        self.checkpoints = []
-        self.done_checkpoints = []
-        self.lastCheckpoint = None
-        self.check_counter = 0
-        self.checkpoint_sleep = 2
-
-        self.position = (0,0)
-        self.rotation = 0
-
         self.speed = 0
         self.MIN_speed = 2.5 
 
-        self.speed_sum = 0
+        # CURRENT LIFE ATTRIBUTES
+        self.alive = False
+        self.life_counter = 0
+        self.distance = 0
+        self.info_distance = 0
+
+        # TRACK INFO
+        self.checkpoints = []
+        self.done_checkpoints = []
+        self.lastCheckpoint = None
+
+        # POSITIONAL ATTRIBUTES
+        self.position = (0,0)
+        self.rotation = 0
+
 
     def update(self, screen):
         ''' PYGAME DRAWING '''
@@ -50,55 +55,31 @@ class Car:
             
             screen.blit(disabled, self.get_center_pos(self.position))
 
-
     def reset(self):
-        ''' POS/ROT RESET '''
+        ''' POS/ROT/STATE RESET '''
         self.set_pos(self.startPosition)
         self.abs_rotate(self.startRotation)
         self.speed = self.startSpeed
         self.checkpoints = []
         self.done_checkpoints = []
-        self.check_counter = 0
         self.life_counter = 0
 
-        self.speed_sum = 0
         self.distance = 0
         self.info_distance = 0
         self.alive = True
 
-    def calc_fitness(self, life_value, check_value, speed_value, leaderboard):
-        population_size = len(leaderboard)
-
-        # fitness = life_value*self.life_counter
-        fitness = 0
-        fitness += self.distance*life_value
-        fitness += len(self.checkpoints)*check_value
-
-        for loop in range(len(self.checkpoints)):
-            ch = [_ch for _ch in leaderboard if len(_ch) >= loop+1]
-
-            if not (len(ch) > 1): 
-                fitness += speed_value
-                continue
-                
-            ch = sorted(ch, key = lambda x: x[loop])
-
-            rank = ch.index(self.checkpoints)
-            fitness += speed_value - rank*(speed_value/len(ch))
-
-        return int(fitness)
-
     def update_pos(self):
         ''' CAR MOVEMENT '''
+        # CHECK FOR SPEED LIMIT
         if (self.speed < self.MIN_speed):
             self.speed = self.MIN_speed
 
+        # MOVE
         dx = (self.speed * math.cos(math.radians(self.rotation)))
         dy = (self.speed * math.sin(math.radians(self.rotation)))
 
         self.distance += math.sqrt(dx**2 + dy**2)
         self.info_distance = self.distance
-        self.speed_sum += self.speed
         
         self.position = (self.position[0] + dx,
                          self.position[1] - dy)
@@ -108,7 +89,7 @@ class Car:
         self.position = pos
 
     def get_pos(self):
-        ''' POS SETTER '''
+        ''' POS GETTER '''
         return (int(self.position[0]),int(self.position[1]))
 
     def get_center_pos(self, pos):
@@ -126,7 +107,7 @@ class Car:
         self.image = PG.transform.rotate(self.orig_image, self.rotation)
 
     def abs_rotate(self, angle):
-        ''' ABSOLUTE ROT '''
+        ''' ABSOLUTE ROT/ROT SETTER '''
         self.rotation = angle
         self.image = PG.transform.rotate(self.orig_image, self.rotation)
 
@@ -135,8 +116,12 @@ class Car:
         car_height = self.orig_image.get_height()
         car_width = self.orig_image.get_width()
 
+        # CORNER ESTIMATION
         angle = 23
         c = math.sqrt((car_height/2)**2 + (car_width/2)**2) - 6 
+
+        xx = math.cos(math.radians(self.rotation)) * car_width/2
+        yy = math.sin(math.radians(self.rotation)) * car_width/2
 
         x1 = math.cos(math.radians(self.rotation-angle)) * c
         y1 = math.sin(math.radians(self.rotation-angle)) * c
@@ -145,13 +130,9 @@ class Car:
 
         x3 = math.cos(math.radians(self.rotation+180-angle)) * c
         y3 = math.sin(math.radians(self.rotation+180-angle)) * c
-
         x4 = math.cos(math.radians(self.rotation+180+angle)) * c
         y4 = math.sin(math.radians(self.rotation+180+angle)) * c
 
-        xx = math.cos(math.radians(self.rotation)) * car_width/2
-        yy = math.sin(math.radians(self.rotation)) * car_width/2
-        
         center_pos = self.position
         NN = (int(center_pos[0] + xx), int(center_pos[1] - yy))
 
@@ -167,8 +148,6 @@ class Car:
         colliders = [WALL_COLOR, START_COLOR, CHECKPOINT_COLOR]
         testPoints = self.get_corner_points()
 
-        self.check_counter += 1
-
         for index, p in enumerate(testPoints):
             c = TRACK_IMAGE.get_at(p)
 
@@ -179,9 +158,8 @@ class Car:
 
                 elif (c == START_COLOR and 
                       index == 0 and 
-                      self.lastCheckpoint != "START" and 
-                      self.checkpoint_sleep < self.check_counter):
-                    self.check_counter = 0
+                      self.lastCheckpoint != "START"):
+
                     self.checkpoints.append(self.life_counter)
                     self.lastCheckpoint = "START"
                     self.done_checkpoints = []
@@ -190,9 +168,8 @@ class Car:
 
                 elif (c in CHECKPOINT_COLOR and 
                       c not in self.done_checkpoints and
-                      index == 0 and 
-                      self.checkpoint_sleep < self.check_counter):
-                    self.check_counter = 0
+                      index == 0):
+
                     self.checkpoints.append(self.life_counter)
                     self.lastCheckpoint = "CHECK"
                     self.done_checkpoints.append(c)
@@ -200,5 +177,26 @@ class Car:
 
                 else:
                     return 0
-
         # return code: -1 = wall; 0 = empty; 1 = start; 2 = checkpoint 
+
+    def calc_fitness(self, life_value, check_value, speed_value, leaderboard):
+        ''' FULL FITNESS CALCULATION '''
+        population_size = len(leaderboard)
+
+        fitness = 0
+        fitness += self.distance*life_value
+        fitness += len(self.checkpoints)*check_value
+
+        for loop in range(len(self.checkpoints)):
+            ch = [_ch for _ch in leaderboard if len(_ch) >= loop+1]
+
+            if not (len(ch) > 1): 
+                fitness += speed_value
+                continue
+                
+            ch = sorted(ch, key = lambda x: x[loop])
+
+            rank = ch.index(self.checkpoints)
+            fitness += speed_value - rank*(speed_value/len(ch))
+
+        return int(fitness)

@@ -28,10 +28,8 @@ class GeneticAlg:
         best_fit = sorted(self.fitness.copy())[self.popSize//2:]
         
         # PARENTS ROULETTE
-        # nMax = sum(self.fitness)
         nMax = sum(best_fit)
 
-        # for i in range(self.popSize):
         for i in range(self.popSize):
             x = R.randint(0,nMax)
             nTest = 0
@@ -46,6 +44,7 @@ class GeneticAlg:
         # MATING POOL
         self.children = []
         for loop in range(int(self.popSize//2)):
+            # MAKING PARENTS
             p1 = R.choice(self.parents)
             self.parents.remove(p1)
             p2 = R.choice(self.parents)
@@ -54,7 +53,7 @@ class GeneticAlg:
             ch1 = []
             ch2 = []
             for i in range(len(self.population[0])):
-                # CROSSOVER
+                # DNA CROSSOVER
                 x = R.choice([0,1])
                 if(x == 0):
                     ch1.append(p1[i])
@@ -66,17 +65,13 @@ class GeneticAlg:
             self.children.append(ch1)
             self.children.append(ch2)
 
-        # MUTATION
+        # DNA MUTATION
         for ch in self.children:
             for i in range(len(ch)):
                 if(R.random() <= (self.mutRate)):
                     ch[i] = 2*R.random()-1
 
-        # SAVE HALF ADD HALF
-        # ordered_pop = [x for _,x in sorted(zip(self.fitness, self.population))]
-        # self.population = ordered_pop[self.popSize//2:]
-        # self.population = best
-        # self.population += (ch for ch in self.children)
+        # ALL THE NEW CHILDREN CHANGE POPULATION + BEST FROM LAST GEN
         self.population = self.children
         self.population.pop()
         self.population.append(best_one)

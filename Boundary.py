@@ -32,4 +32,3 @@ class Checkpoint:
 
     def update(self):
         PG.draw.line(self.screen, self.color, self.start, self.end, 5)
-

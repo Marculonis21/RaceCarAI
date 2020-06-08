@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 from matplotlib import pyplot as plt
+import math
 import numpy as np
+import os
+import pickle
 import pygame as PG
 import sys
-import pickle
-import math
-import os
  
 from Boundary import Boundary
 from Boundary import Checkpoint
@@ -16,6 +16,7 @@ from GeneticAlg import GeneticAlg
 from Ray import RayCaster
 import Controller as Ctrl
 
+# FIGURE PLOT
 def plotValues(v1, v2, v3):
     plt.cla()
 
@@ -23,12 +24,13 @@ def plotValues(v1, v2, v3):
     plt.plot(v2)
     plt.plot(v3)
 
-
+# STATE MODES
 MODE = 0
 TRACKDRAWING = 0
 SETUP = 1
 TRAINING = 2
 
+# PYGAME
 PG.init()
 PG.font.init()
 fontHeader = PG.font.SysFont('Calibri', 35, True, False)
@@ -38,24 +40,29 @@ screen = PG.display.set_mode((800,800))
 PG.display.set_caption("RACE CAR AI")
 clock = PG.time.Clock()
 
+#----------------------------------------------------DRAWING STUFF-------|
+
 BRUSH_RADIUS = 20
 WALL_COLOR = (100,100,100)
 START_COLOR = (255,200,200)
 CHECKPOINT_COLOR = (200,200,255)
 CHECKPOINT_COLOR = []
 
+#----------------------------------------------------NETWORK-------------|
+
 NETWORK_ARCHITECTURE = [6,8,4,2] 
-# NETWORK_ARCHITECTURE = [5,12,8,6] 
 
 test_iteration = 0 
 test_mainIter = 0
 test_change = True
 
-testing = True
+testing = False
 test_episodes = 50
 TESTING_ARCHITECTURE = [[6,8,4,2],
                        [6,10,5,2],
                        [6,16,8,2]]
+
+#----------------------------------------------------TRACK STUFF---------|
 
 TRACK_IMAGE = None
 boundaries = []
@@ -65,9 +72,12 @@ START_ROTATION = 0
 SETUPMODE = 0 #0 START; #1 START_ROTATION; 2 CHECKPOINTS 
 checkpoints = []
 
+#----------------------------------------------------GENETIC ALG---------|
+
 POPULATION_SIZE = 50
 
-### MAIN PART ###
+#----------------------------------------------------MAIN LOOP-----------|
+
 while True:
     screen.fill((50,50,50))
 
@@ -76,6 +86,7 @@ while True:
     for c in checkpoints:
         c.update()
 
+#----------------------------------------------------INPUT OPTIONS-------|
 
     # INPUT EVENTS
     for event in PG.event.get():
@@ -91,6 +102,7 @@ while True:
                     pass
 
                 sys.exit()
+
 
         if(MODE == TRACKDRAWING):
             # MOUSE BUTTONS EVENTS
@@ -126,6 +138,7 @@ while True:
                                           maxLength=200)
 
                     MODE = SETUP
+
 
         elif(MODE == SETUP):
             if event.type == PG.MOUSEBUTTONDOWN:
@@ -176,11 +189,11 @@ while True:
 
             if event.type == PG.KEYUP:
                 # SETUP ADD START 
-                if event.key == PG.K_KP1:
+                if event.key == PG.K_KP1 or event.key == 43:
                     SETUPMODE = 0
 
                 # SETUP ADD CHECKPOINTS
-                if event.key == PG.K_KP2:
+                if event.key == PG.K_KP2 or event.key == 236:
                     SETUPMODE = 2
 
                 # SETUP CLEAR - N
@@ -193,12 +206,17 @@ while True:
 
                 # CAPTURE SCREEN -> TRAINING - ENTER 
                 if event.key == PG.K_RETURN and len(checkpoints) > 0 and SETUPMODE != 1:
+                # if event.key == PG.K_RETURN:
                     PG.image.save(screen, "data/track.png")
                     TRACK_IMAGE = PG.image.load("data/track.png")
 
                     carList = [Car("data/carClipArt.jpg", 50) for car in range(POPULATION_SIZE)]
 
-                    # CARS PREPARATION
+                    ## messing around
+                    # START_POSITION = (400,400)
+                    # START_ROTATION = 0
+
+                    # CAR PREPARATION
                     for car in carList:
                         car.startPosition = START_POSITION
                         car.startRotation = START_ROTATION
@@ -230,43 +248,60 @@ while True:
 
                     MODE = TRACKDRAWING
 
-        elif (MODE == TRAINING):
-            # KEYBOARD EVENTS
-            if event.type == PG.KEYDOWN:
-                # PLAYER CONTROL 
-                if event.key == PG.K_LEFT:
-                    carList[0].rel_rotate(15)
-                if event.key == PG.K_RIGHT:
-                    carList[0].rel_rotate(-15)
+        # PLAYER CONTROLL - OUTDATED
+        # elif (MODE == TRAINING):
+        #     if event.type == PG.KEYDOWN:
+        #         if event.key == PG.K_LEFT:
+        #             carList[0].rel_rotate(15)
+        #         if event.key == PG.K_RIGHT:
+        #             carList[0].rel_rotate(-15)
 
-    # INPUT EVENTS
+#----------------------------------------------------STATE MACHINE-------|
+#----------------------------------------------------TRACKDRAW STATE-----|
 
     if(MODE == TRACKDRAWING):
         aPos = PG.mouse.get_pos()
         PG.draw.circle(screen, PG.Color('white'), aPos, BRUSH_RADIUS, 1)
 
-        text = ["Right click - Draw walls",
-                "Left click - Erase walls",
-                "N - Remove all walls",
-                "Mouse wheel - Change brush size"]
+        # text = ["Right click - Draw walls",
+        #         "Left click - Erase walls",
+        #         "Mouse wheel - Change brush size",
+        #         "N - Remove all walls"]
+        text = ["Pravé tlačítko myši - Přidat stěny",
+                "Levé tlačítko myši - Mazat stěny",
+                "Kolečko myši - Změnit velikost štětce",
+                "N - Smazat vše"]
 
-        textsurface = fontHeader.render("Track Drawing:", True, (230,230,255))
+        # textsurface = fontHeader.render("Track Drawing:", True, (230,230,255))
+        textsurface = fontHeader.render("Nakreslit trať:", True, (230,230,255))
         screen.blit(textsurface, (10,10))
 
         for index, t in enumerate(text):
             textsurface = fontText.render(t, True, PG.Color('white'))
-            screen.blit(textsurface, (14,40+25*index))
+            screen.blit(textsurface, (12,40+25*index))
+
+
+#----------------------------------------------------TRACKSETUP STATE----|
 
     elif(MODE == SETUP):
-        text = ["Right click - Add checkpoint to track",
-                "1 - Add start",
-                "2 - Add checkpoints",
-                "B - Remove last checkpoint",
-                "N - Remove all checkpoints"]
+        # text = ["Right click - Add checkpoint to track",
+        #         "1 - Add start",
+        #         "2 - Add checkpoints",
+        #         "B - Remove last checkpoint",
+        #         "N - Remove all checkpoints"]
+        text = ["Pravé tlačítko myši - bod",
+                "1 - Přidat start",
+                "2 - Přidat záchytný bod",
+                "B - Vymazat poslední vložený bod",
+                "N - Vymazat všechny body",
+                "",
+                "Backspace - Vrátit se zpět ke kreslení"]
 
-        textsurface = fontHeader.render("Track Setup:", True, (230,230,255))
+        # textsurface = fontHeader.render("Track Setup:", True, (230,230,255))
+        textsurface = fontHeader.render("Připravit trať:", True, (230,230,255))
         screen.blit(textsurface, (10,10))
 
+        # SETUPMODE = 1 - START DIR
         if (SETUPMODE == 1):
             PG.draw.line(screen, (255,100,100), START_POSITION, PG.mouse.get_pos(), 3)
 
@@ -294,7 +329,11 @@ while True:
                 textsurface = fontText.render(t, True, PG.Color('white'))
             screen.blit(textsurface, (14,40+25*index))
 
+#----------------------------------------------------TRAINING STATE------|
+
     elif(MODE == TRAINING):
+
+        # ARCHITECTURE TESTING
         if (testing and test_change):
             print("Iter: {}".format(test_mainIter))
 
@@ -318,11 +357,13 @@ while True:
                 
             test_change = False
                             
+        # MAIN CAR-LOOP
         done = True
         for index, car in enumerate(carList):
             if(car.alive):
                 done = False
 
+                # INFO = NETWORK INPUT
                 info = []
                 for i in range(5):
                     angle = -60 + 30*i
@@ -330,8 +371,10 @@ while True:
                     info.append(ray[1]/200)
                     
                 info.append(car.info_distance/500)
+                # CONTROLLER
                 output = Ctrl.controller(GA.population[index], info, NETWORK_ARCHITECTURE)
 
+                # OUTPUT
                 powerOutput = output[0] # up|stable|down
                 steerOutput = output[1] # left|front|right
 
@@ -348,26 +391,30 @@ while True:
                     car.rel_rotate(5*steerOutput)
                 else:
                     pass
-                    
+
                 car.update_pos()
 
+                # COLLISION CHECK
                 try:
                     car.collision_detection(TRACK_IMAGE, WALL_COLOR, START_COLOR, CHECKPOINT_COLOR)
                 except IndexError:
                     car.alive = False
 
-                ## Collision points drawing
+                # # COLLISION POINTS DRAWING
                 # for point in car.get_corner_points():
                 #     PG.draw.circle(screen, PG.Color('white'), point, 3, 0)
 
+            # CAR DRAWING
             car.update(screen)
 
+        # PG.image.save(screen, "./record/pic.png".format(car.life_counter))
+        # quit()
+
+        # AFTER ALL DONE
         if (done):
-            avg_car_speed = 0
             checkLeaderboard = [car.checkpoints for car in carList]
             for i, car in enumerate(carList):
                 GA.fitness[i] = car.calc_fitness(0.75, 50.0, 100.0, checkLeaderboard)
-                avg_car_speed += car.speed_sum/car.life_counter
                 car.reset()
 
             last_best, avg_fitness, min_fit, max_fit = GA.new_generation()
@@ -376,16 +423,21 @@ while True:
             episodes[2].append(max_fit)
 
             plt.cla()
-            plt.title('Training')
-            plt.xlabel('Episode')
-            plt.ylabel('Fitness')
-            plt.plot(episodes[0], label='Average fitness')
-            plt.plot(episodes[1], label='Min-fitness')
-            plt.plot(episodes[2], label='Max-fitness')
+            # plt.title('Training')
+            # plt.xlabel('Episode')
+            # plt.ylabel('Fitness')
+            plt.title('Trénink')
+            plt.xlabel('Episoda')
+            plt.ylabel('Zdatnost')
+            # plt.plot(episodes[0], label='Average fitness')
+            plt.plot(episodes[0], label='Průměrná zdatnost')
+            plt.plot(episodes[1], label='Min-zdatnost')
+            plt.plot(episodes[2], label='Max-zdatnost')
             plt.legend(loc='upper left', fontsize=9)
             plt.tight_layout()
             plt.pause(0.1)
 
+            # FIGURE SAVING
             while True:
                 try:
                     if not (testing):
@@ -413,6 +465,6 @@ while True:
                 print("NEW ITERATION {}".format(str(TESTING_ARCHITECTURE[test_iteration])))
 
 
+    # FRAMERATE 60 and REDRAW
     PG.display.flip()
-
     clock.tick(60)

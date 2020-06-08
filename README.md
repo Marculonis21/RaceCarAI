@@ -18,5 +18,3 @@ Uživatel nadefinuje trať, auto (GA) se senzory se pak učí trať projet.
 * [x] "Collision detection"
 * [x] GA NN pro auto
     - **potřeba si trochu hrát s nastavením**
-
-* [ ] NEAT???
