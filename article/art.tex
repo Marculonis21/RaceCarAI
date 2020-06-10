@@ -95,14 +95,15 @@
 
         Neuronová síť je modelována s inspirací v mozkových neuronech. Každý bod je považován za
         samostatný neuron a má řadu spojení, z biologie \textit{axonů}. Právě tato spojení jsou hlavní
-        funkční složkou neuronových sítí, v programu tedy vždy uchováváme číselnou hodnotu každého z nich.
+        funkční složkou neuronových sítí, v programu tedy vždy uchováváme číselnou hodnotu každého z nich. 
+        Tato hodnota je obvykle reálné číslo v rozsahu od -1 do 1.
         Neurony dělíme do vrstev (VSTUP, SKRYTÁ, VÝSTUP). Existuje pravidlo, že každý neuron z nižší vrstvy 
         je spojen se všemi neurony ve vyšší vrstvě. Nejjednodušším znázorněním je 
         právě Schéma~\ref{fig:perceptron}, skládající se z 3 vstupů a 1 výstupu.
         Jak se ale tvoří číselné hodnoty?
 
         \begin{equation}
-            \sigma(\displaystyle\sum_{k}{x_k * w_k})
+            \sigma(\displaystyle\sum_{k=1}^{n}{x_k * w_k})
         \end{equation}
         kde $\sigma$ je \textit{aktivační funkce}. Tyto funkce pouze upravují možný rozsah výstupních 
         hodnot.
@@ -123,7 +124,7 @@
         \begin{figure}[h]
             \centering
             \centering
-            \includegraphics[width=0.8\textwidth]{data/nn-scheme.png}
+            \includegraphics[width=0.76\textwidth]{data/nn-scheme.png}
             \captionof{figure}{Hluboká neuronová síť}
             \label{fig:deepnn}
         \end{figure}
