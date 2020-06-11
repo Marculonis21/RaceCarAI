@@ -14,6 +14,7 @@
 \usepackage[center]{caption}
 \usepackage{wrapfig}
 \usepackage{animate}
+\usepackage{textcomp}
 \usepackage{enumitem}
 \setlist[enumerate]{itemsep=0mm}
 
@@ -219,5 +220,150 @@
         Kvůli zdánlivé obtížnosti úkolu a velikosti sítě jsem se rozhodl pro hodnotu 
         \textbf{pravděpodobnosti mutace = 2,5\%}. Zároveň pro snazší uchování nejlepší 
         genetické informace se nejlepší jedinec poslední generace přenáší do další.
-        
+
+    \pagebreak
+    \section{Projekt - AI-Závodník}
+        Celý program je napsán velmi objektově, kde každá potřebnější funkce je přiřazena
+        své třídě.
+
+        \textbf{Seznam vlastních tříd}
+        \begin{itemize}
+            \item \textbf{main} - hlavní, středová část programu, spojující všechny knihovny
+            \item Car - třída závodníků se všemi funkcemi
+            \item Controller - ovládání, funkce umožňující spojení vozidel a umělé inteligence
+            \item GeneticAlg - třída zajišťující práci s mechanismy genetického algoritmu,
+                zpracovávání dat celé populace testovaných jedinců
+            \item Boundary - třída objektů, se kterými závodníci mohou interagovat
+            \item Ray - třída umožnující práci s paprsky, které se používají při měření vzdálenosti
+                (lazerový metr) - senzory vozidel
+        \end{itemize}
+
+        \subsection{Závodníci}
+
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=1\textwidth]{../data/carClipArt.jpg}
+                \captionof{figure}{Model vozidla}
+                \label{fig:carpic}
+            \end{figure}
+
+
+            Centrálním bodem celého projektu jsou závodnící ovládaní umělou intelignecí.
+            Hlavním kritériem při jejich vývoji bylo předat sítím co největší kontrolu nad 
+            autem samotným. 
+
+            \underline{\textbf{\large{Ovládání}}}
+            \begin{figure}[H]
+            \centering
+            \begin{minipage}[t]{.5\textwidth}
+                \centering
+                % \includegraphics[width=0.9\linewidth]{data/perceptron-model1.png}
+                \animatedgraphcs[autoplay,width=1\linewidth]{24}{data/forward/r_}{1}{54}
+            \end{minipage}%
+            \begin{minipage}[t]{.5\textwidth}
+                \centering
+                % \includegraphics[width=0.85\linewidth]{data/easynn-scheme.png}
+                \animatedgraphcs[autoplay,width=1\linewidth]{24}{data/spin/r_}{1}{90}
+            \end{minipage}
+            \captionof{figure}{Povolená ovládání vozidel}
+            \label{fig:controlls}
+            \end{figure}
+
+            Ovládání závodníkům umožňuje celkovou kontrolu nad \textbf{rychlosti a zatáčení s proměnlivou
+            sílou otáčení}. S touto možností se závodnící při dostatečném tréninku zvládají naučit
+            velmi optimalizované průjezdy závodními traťemi všeho druhu.\\
+
+            \tab V architektuře neuronové sítě jsou do výstupní vrstvy zabudovány dva neurony.
+            První pracuje s určováním rychlosti a druhý se zatáčením. Hodnoty, které na těchto
+            neuronech můžeme dosáhnout jsou upraveny do \textbf{rozsahu -1.0 - 1.0}. Tímto způsobem 
+            má ovladač velkou kontrolu při rozhodování o síle zrychlení/zpomalení nebo o úhlu zatočení.
+
+        \subsection{Kontrola prostředí}
+            Aby se ovládání mohlo rozhodovat, je potřeba mu dodat nějaká data z prostředí kolem 
+            jeho vozidla. Hlavním zdrojem informací (vstupní vrstva neuronové sítě) je 5
+            \textbf{dálkových senzorů}, které měří vzdálenost předního nárazníku od stěn před ním.
+            Paprsky senzorů jsou vysílány z předního středového bodu bod zorným úhlem 120\textdegree
+            s určitou maximální vzdáleností, které můžou dosáhnout. Poslední informací 
+            je poté \textbf{interní časomíra vozidla}, která udává kolik proběhlo výpočtů od startu testu. 
+
+            \begin{figure}[H]
+            \centering
+            \begin{minipage}[t]{.5\textwidth}
+                \centering
+                \includegraphics[width=1\linewidth]{data/rays1.png}
+            \end{minipage}%
+            \begin{minipage}[t]{.5\textwidth}
+                \centering
+                \includegraphics[width=1\linewidth]{data/rays2.png}
+            \end{minipage}
+            \captionof{figure}{Práce měřících paprsků}
+            \label{fig:rays}
+            \end{figure}
+
+            \tab Vedle dálkových měřičů jsou ještě vozidla kontrolována proti kolizím s testovacím 
+            prostředím. Případná kolize se stěnou závodní trati by ukončila testovací jízdu
+            daného vozidla z generace a následně by byl vypočítán jeho výsledek (zdatnost).
+            Tuto kontrolu zajišťuje \textbf{5 senzorů po obvodu modelu vozidla} a kontrola
+            kolize na nich probýhá každý výpočetní cyklus.
+            
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=1\textwidth]{data/collisionpoints.png}
+                \captionof{figure}{Senzory kolize}
+                \label{fig:collisionpoints}
+            \end{figure}
+
+        \subsection{Trénink závodníků}
+            Pro trénování je nejdřív potřeba vytvořit testovací prostředí (trať) a vložit
+            do ní pár kontrolních bodů (START, ZÁCHYTNÉ BODY). Potřeba zmínit,
+            že každý trénink, i když bude prováděn na totožné trati, bude odlišný od těch
+            předchozích. Příčinou je náhodnost celého procesu a styl jakým jsou vytvářeni
+            náhodní jedinci pro první generaci testování.
+
+            \tab Po nárazu všech závodníků nastává konec testování pro danou skupinu.
+            Je vypočítána zdatnost každého z nich, kde je potřeba určit \textbf{za co bude jedinec
+            odměněň}. 
+            
+            \underline{\textbf{Konfigurace odměn za výsledky na trati}}
+            \begin{tabular}[c]{ | l | l | l | l | p{5cm} | }
+                \hline
+                 & Délka života & Počet záchytných bodů & Pořadí na záchytných bodech & Chování \\ \hline
+                \textbf{Použito} & 0,75 & 50 & 100 & Nejlepší konfigurace. Jedinci jsou schopni rychlého učení celé trati,
+                snaží se ji celou dokončit a po dokončení se postupně snaží na trati zrychlit.\\ \hline
+                          & 1 & 50 & 25 & Jedinci jsou schopni se trať naučit, nicméně jezdí velmi pomalu.
+                Samotný život je cenější než snaha závodit o prvenství na záchytném bodě.\\ \hline
+                          & 0,25 & 50 & 150 &  \\ \textit{"Nastavení závodníků"} - Jedinci rychle
+                pochopí, že největší zisk není v délce života, ale v rychlosti na záchytných bodech,
+                což vede k velmi rychlým průjezdům. Nicméně se může stát, že žádný z jedinců trať nevyřeší celou.\hline
+                \label{tab:config}
+            \end{tabular}
+
+            \tab Po nalezení dobré konfigurace odměn a správné architektury sítě
+            se výsledky při opakovaném testování chovají vždy velmi podobně.
+            Začátek je o pomalém postupu, kde se může vyskytnout jedinec, který
+            je schopen se na trati dostat dál. Tento posun (\textbf{správná genetická informace})
+            se rychle šíří i mezi zbytek populace. Poté nastává zlomový bod, kdy se
+            v jedné generaci objeví takový jedinec, který je schopen projet trať celou
+            (na základě více primitivního "vyhýbání se stěnám", než optimalizovaného průjezdu). 
+            Tato informace se posléze začíná šířit i mezi ostatní a začínají vznikat nové,
+            lepší a rychlejší průjezdy. \textbf{V této fázi je problém (trať) vyřešen}.
+            Toto řešení ale nemusí být to nejlepší, a tak i dál jde sledovat postupný nárůst
+            úspěšnosti.\\
+            \tab Celý postup je na konci každé generace zaznamenáván do grafu.
+
+            \begin{figure}[H]
+            \centering
+            \begin{minipage}[t]{.5\textwidth}
+                \centering
+                \includegraphics[width=1\linewidth]{../saves/f0.png}
+            \end{minipage}%
+            \begin{minipage}[t]{.5\textwidth}
+                \centering
+                \includegraphics[width=1\linewidth]{../saves/f1.png}
+            \end{minipage}
+            \captionof{figure}{Výsledky tréninků na dvou různých tratích}
+            \label{fig:results}
+            \end{figure}
+
+
 \end{document}

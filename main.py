@@ -427,7 +427,7 @@ while True:
             # plt.xlabel('Episode')
             # plt.ylabel('Fitness')
             plt.title('Trénink')
-            plt.xlabel('Episoda')
+            plt.xlabel('Epizoda')
             plt.ylabel('Zdatnost')
             # plt.plot(episodes[0], label='Average fitness')
             plt.plot(episodes[0], label='Průměrná zdatnost')
