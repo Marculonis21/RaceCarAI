@@ -1,0 +1,11 @@
+\babel@toc {english}{}
+\contentsline {section}{\numberline {1}O projektu}{1}
+\contentsline {section}{\numberline {2}Mechanismy programu}{1}
+\contentsline {subsection}{\numberline {2.1}Um\IeC {\v e}l\IeC {\'a} inteligence}{1}
+\contentsline {subsection}{\numberline {2.2}Genetick\IeC {\'y} algoritmus}{3}
+\contentsline {section}{\numberline {3}Projekt - AI-Z\IeC {\'a}vodn\IeC {\'\i }k}{5}
+\contentsline {subsection}{\numberline {3.1}Z\IeC {\'a}vodn\IeC {\'\i }ci}{5}
+\contentsline {subsection}{\numberline {3.2}Kontrola prost\IeC {\v r}ed\IeC {\'\i }}{6}
+\contentsline {subsection}{\numberline {3.3}Tr\IeC {\'e}nink}{7}
+\contentsline {subsection}{\numberline {3.4}Inteligence}{8}
+\contentsline {section}{\numberline {4}Z\IeC {\'a}v\IeC {\v e}r}{9}

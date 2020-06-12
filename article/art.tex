@@ -59,7 +59,13 @@
 }
 
 \addto\captionsenglish{\renewcommand{\figurename}{Schéma}}
-\addto\captionsenglish{\renewcommand{\tablename}{Tabulka}}
+
+\addto\captionsenglish{\renewcommand{\contentsname}{Obsah}}
+\addto\captionsenglish{\renewcommand{\listfigurename}{Seznam obrázků}}
+\addto\captionsenglish{\renewcommand{\refname}{Seznam literatury}}
+
+
+\renewcommand{\figurename}{}
 
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
 
@@ -118,6 +124,7 @@
         \begin{equation}
             \sigma(\displaystyle\sum_{k=1}^{n}{x_k * w_k})
         \end{equation}
+        \vspace{-0.2cm}
         \begin{equation}
             \scriptscriptstyle 0.5*0.1 + 1.0*0.5 + 0.25*0.3 = 0.625 \hspace*{0.2cm} \rightarrow \hspace*{0.2cm}
             \sigma(0.625)=0.625
@@ -139,12 +146,13 @@
         Tyto změny pomáhají při přenosu signálu mezi neurony v síti.
         \\\\\\\\
         \begin{flushleft}
-            \vspace{-3em}
+            \vspace{-3.1em}
             Složitější neuronové sítě jsou už jen opakováním tohoto zavedeného postupu. Dále se pro sítě 
             tohoto typu zavádí jméno \textbf{hluboká neuronová síť} (\textit{z ang. deep neural network}). 
             To označuje schéma, ve kterém je použita více než jedna skrytá vrstva.
         \end{flushleft}
 
+        \vspace{-0.3em}
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.54\textwidth]{data/nn-scheme.png}
@@ -165,7 +173,7 @@
         spoustě drobných úprav při hledání dobře pracující sítě.\\
         \tab Architektura, která je použita v prezentovaném programu, byla docílena řadou testů
         různých sítí proti sobě.\\\\
-        \tab\textbf{Finální síť použitá v programu je ve schématu [6, 8, 4, 2]}\\
+        \textbf{Finální síť použitá v programu je ve schématu [6, 8, 4, 2]}\\
         5 vstupů měřících vzdálenost + 1 vstup měřící čas\\
         1 výstup pro rychlost + 1 výstup pro zatáčení
 
@@ -173,7 +181,7 @@
         Genetický algoritmus má v informatice mnoho využití při řešení logických problémů. 
         Ve svém projektu jsem ho použil na úpravu spojů v neuronové síti. Algoritmus je také známý svými 
         procesy, které přímo kopírují fungování v přírodě. Teorie genetického algoritmu je založena 
-        na Darwinově teorii \textit{"O původu druhů"}\\
+        na Darwinově teorii (\textit{"O původu druhů"})\\
         \tab Rozlišujeme jedince, jejichž genetickou informací jsou všechny hodnoty spojů v neuronové síti. 
         Při učení procházíme stálým cyklem, při kterém se tato genetická informace upravuje tak, 
         aby se výsledky zlepšovaly.
@@ -230,7 +238,7 @@
     \pagebreak
     \section{Projekt - AI-Závodník}
         \tab Celý program je napsán s důrazem na objektové programování, kde každá potřebnější funkce 
-        je přiřazena své třídě.
+        je přiřazena své třídě. Hlavní knihovna pro vykreslování je \textbf{PyGame}.
         \\
 
         \textbf{Seznam vlastních tříd}
@@ -241,7 +249,7 @@
             \item Controller - ovládání, funkce umožňující spojení vozidel a umělé inteligence
             \item GeneticAlg - třída zajišťující práci s mechanismy genetického algoritmu,
                 zpracovávání dat celé populace testovaných jedinců
-            \item Boundary - třída objektů, se kterými závodníci mohou interagovat
+            \item Boundary - třída objektů, se kterými závodníci mohou na trati interagovat (stěny, záchytné body)
             \item Ray - třída umožnující práci s paprsky, které se používají při měření vzdálenosti
                 (lazerový metr) - senzory vozidel
         \end{itemize}
@@ -258,7 +266,7 @@
 
             Centrálním bodem celého projektu jsou závodnící ovládaní umělou intelignecí.
             Hlavním kritériem při jejich vývoji bylo předat sítím co největší kontrolu nad 
-            autem samotným. 
+            vozidlem samotným. 
 
             \vspace{2em}
             \begin{figure}[H]
@@ -275,7 +283,7 @@
             \label{fig:controlls}
             \end{figure}
 
-            Ovládání závodníkům umožňuje celkovou kontrolu nad \textbf{rychlosti a zatáčení s proměnlivou
+            Ovládání závodníkům dává plnou kontrolu nad \textbf{rychlostí a zatáčením s proměnlivou
             sílou otáčení}. S touto možností se závodnící při dostatečném tréninku zvládají naučit
             velmi optimalizované průjezdy závodními traťemi všeho druhu.
 
@@ -310,7 +318,7 @@
             \end{figure}
             \pagebreak
 
-            \tab Vedle dálkových měřičů jsou ještě vozidla kontrolována proti kolizím s testovacím 
+            Vedle dálkových měřičů jsou ještě vozidla kontrolována proti kolizím s testovacím 
             prostředím. Případná kolize se stěnou závodní trati by ukončila testovací jízdu
             daného vozidla z generace a následně by byl vypočítán jeho výsledek (zdatnost).
             Tuto kontrolu zajišťuje \textbf{5 senzorů po obvodu modelu vozidla}. Kontrola
@@ -323,15 +331,15 @@
             \end{figure}
 
         \vspace*{-3em}
-        \subsection{Trénink závodníků}
+        \subsection{Trénink}
             Pro trénování je nejdřív potřeba vytvořit testovací prostředí (trať) a vložit
             do ní pár kontrolních bodů (START, ZÁCHYTNÉ BODY). Potřeba zmínit,
             že každý trénink, i když bude prováděn na totožné trati, bude odlišný od těch
             předchozích. Příčinou je náhodnost celého procesu a styl jakým jsou vytvářeni
             náhodní jedinci pro první generaci testování.
 
-            \tab Po nárazu všech závodníků nastává konec testování pro danou skupinu.
-            Je vypočítána zdatnost každého z nich, kde je potřeba určit \textbf{za co bude jedinec
+            \tab Po nárazu všech závodníků nastává konec testování pro danou skupinu a 
+            je vypočítána zdatnost každého z nich. Zde je potřeba určit \textbf{za co bude jedinec
             odměněň}. 
             
             \begin{center}
@@ -343,11 +351,11 @@
                 \begin{tabular}{ | c | c | c | c | p{8cm} | }
                     \hline
                     & Délka života & Počet z.b.* & Pořadí na z.b.* & Chování \\ \hline
-                    \mr{2}{\textbf{Použito}} & \mr{2}{0,75} & \mr{2}{50} & \mr{2}{100} & Rychlé učení celé trati, po dokončení 
+                    \mr{2}{\textbf{Použito}} & \mr{2}{0,75 b.} & \mr{2}{50 b.} & \mr{2}{100 b.} & Rychlé učení celé trati, po dokončení 
                     snaha se na trati zrychlit.\\ \hline
-                    & \mr{2}{1} & \mr{2}{50} & \mr{2}{25} & Schopnost se trať naučit, pomalá jízda. Cena života větší než 
+                    & \mr{2}{1 b.} & \mr{2}{50 b.} & \mr{2}{25 b.} & Schopnost se trať naučit, pomalá jízda. Cena života větší než 
                     průjezd záchytnými body.\\ \hline
-                    & \mr{3}{0,25} & \mr{3}{50} & \mr{3}{150} & \textit{"Nastavení závodník"} - Velká rychlost na záchytných bodech.
+                    & \mr{3}{0,25 b.} & \mr{3}{50 b.} & \mr{3}{150 b.} & \textit{"Nastavení závodník"} - Velká rychlost na záchytných bodech.
                     Možné nevyřešení celé tratě. Délka života není tak cenná.\\
                 \hline
                 \end{tabular}
@@ -363,7 +371,7 @@
             je schopen se na trati dostat dál. Tento posun (\textbf{správná genetická informace})
             se rychle šíří i mezi zbytek populace. Poté nastává zlomový bod, kdy se
             v jedné generaci objeví takový jedinec, který je schopen projet trať celou
-            (pouze primitivního "vyhýbání se stěnám", než optimalizovaný průjezd). 
+            (pouze primitivní "vyhýbání se stěnám", než optimalizovaný průjezd). 
             Tato informace se posléze začíná šířit i mezi ostatní jedince a začínají vznikat nové,
             lepší a rychlejší průjezdy. \textbf{V této fázi je problém (trať) vyřešen}.
             Toto řešení ale nemusí být to nejlepší, a tak i dál jde sledovat postupný nárůst
@@ -399,7 +407,7 @@
             A i u mého programu byla jedna taková chyba za mými zády objevena a velmi rychle zneužita.\\
             Jednalo se o problém s průjezdem záchytným bodem, kdy zprvu v programu nebylo hlídáno, zda danný 
             bod byl již jedincem překonán nebo ne. To vedlo k rychlému zneužití, protože jak již bylo řečeno,
-            za průjezd záchytným bodem se obrdží odměna. Toto byl velice rychlý a efektivní způsob zisku odměn.
+            za průjezd záchytným bodem se obrdží odměna. Toto byl velice rychlý a efektivní způsob zisku bodů.
 
     \section{Závěr}
         \tab I když se může zdát, že genetický algoritmus je plnohodnotnou variantou pro umělé inteligence
@@ -415,10 +423,9 @@
 
     \bigskip
     \tableofcontents
-    \pagebreak
     \listoffigures
 
-    \begin{thebibliography}{7}
+    \begin{thebibliography}{6}
         \bibitem{c:perceptron}
             SAPORITO, G. What is a perceptron?. Perceptron model [online]. 2019 [cited 2020-06-10]. 
             Available from \url{https://miro.medium.com/max/1290/0*LJBO8UbtzK_SKMog}.
@@ -442,7 +449,12 @@
         \bibitem{c:carmodel}
             Clipart personal collection - Clipart Art [online]. 
             Dostupné z: \url{https://clipartart.com/images/car-clipart-sprite-sheet-3.jpg}
-
     \end{thebibliography}
 
+    \vspace{2em}
+    \begin{center}
+        \footnotesize{
+            \textbf{Vytvořeno v \LaTeX}
+        }
+    \end{center}
 \end{document}
