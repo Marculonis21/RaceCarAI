@@ -12,10 +12,14 @@
 \usepackage{titling}
 \usepackage{titlesec}
 \usepackage[center]{caption}
+\usepackage[symbol]{footmisc}
 \usepackage{wrapfig}
 \usepackage{animate}
+\usepackage{array}
 \usepackage{textcomp}
 \usepackage{enumitem}
+\usepackage{multirow}
+\usepackage{url}
 \setlist[enumerate]{itemsep=0mm}
 
 
@@ -55,6 +59,9 @@
 }
 
 \addto\captionsenglish{\renewcommand{\figurename}{Schéma}}
+\addto\captionsenglish{\renewcommand{\tablename}{Tabulka}}
+
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
 
 \newcommand{\tab}
 {
@@ -87,13 +94,13 @@
         \begin{minipage}[t]{.5\textwidth}
             \centering
             \includegraphics[width=0.9\linewidth]{data/perceptron-model1.png}
-            \captionof{figure}{Perceptron}
+            \captionof{figure}{Perceptron \cite{c:perceptron}}
             \label{fig:perceptron}
         \end{minipage}%
         \begin{minipage}[t]{.5\textwidth}
             \centering
             \includegraphics[width=0.85\linewidth]{data/easynn-scheme.png}
-            \captionof{figure}{Neuronová síť}
+            \captionof{figure}{Neuronová síť \cite{c:easynn}}
             \label{fig:easynn}
         \end{minipage}
         \end{figure}
@@ -123,7 +130,7 @@
             \vspace{-2.5em}
             \centering
             \includegraphics[width=0.8\linewidth]{data/relu.png}
-            \caption{RELU aktivační funkce} 
+            \caption{RELU aktivační funkce \cite{c:relu}} 
             \label{fig:relu}
         \end{wrapfigure}
 
@@ -141,7 +148,7 @@
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.54\textwidth]{data/nn-scheme.png}
-            \captionof{figure}{Hluboká neuronová síť}
+            \captionof{figure}{Hluboká neuronová síť \cite{c:deepnn}}
             \label{fig:deepnn}
         \end{figure}
 
@@ -174,13 +181,12 @@
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.8\textwidth]{data/genetic-algorithm.png}
-            \captionof{figure}{Genetický crossover}
+            \captionof{figure}{Genetický crossover \cite{c:crossover}}
             \label{fig:crossover}
         \end{figure}
 
         \underline{\textbf{\large{Cyklus genetického algoritmu}}}
-        \begin{enumerate}[itemsep=-1.5mm]
-            \item Určíme, jak velký počet jedinců chceme testovat (\textbf{velikost populace})
+        \begin{enumerate}[itemsep=-1.5mm] \item Určíme, jak velký počet jedinců chceme testovat (\textbf{velikost populace})
             \item Naplníme populaci náhodně generovanými jedinci
             \begin{itemize}[noitemsep]
                 \item každý jedinec je abstrakcí jedné náhodné neuronové sítě
@@ -223,11 +229,13 @@
 
     \pagebreak
     \section{Projekt - AI-Závodník}
-        Celý program je napsán velmi objektově, kde každá potřebnější funkce je přiřazena
-        své třídě.
+        \tab Celý program je napsán s důrazem na objektové programování, kde každá potřebnější funkce 
+        je přiřazena své třídě.
+        \\
 
         \textbf{Seznam vlastních tříd}
-        \begin{itemize}
+        \begin{itemize}[noitemsep]
+            \vspace{-0.5em}
             \item \textbf{main} - hlavní, středová část programu, spojující všechny knihovny
             \item Car - třída závodníků se všemi funkcemi
             \item Controller - ovládání, funkce umožňující spojení vozidel a umělé inteligence
@@ -239,31 +247,29 @@
         \end{itemize}
 
         \subsection{Závodníci}
-
-            \begin{figure}[H]
+            \hfill
+            \vspace{-2em}
+            \begin{wrapfigure}[4]{r}{0.4\textwidth}
                 \centering
-                \includegraphics[width=1\textwidth]{../data/carClipArt.jpg}
-                \captionof{figure}{Model vozidla}
+                \includegraphics[width=0.7\linewidth]{../data/carClipArt.jpg}
+                \caption{Model vozidla \cite{c:carmodel}} 
                 \label{fig:carpic}
-            \end{figure}
-
+            \end{wrapfigure}
 
             Centrálním bodem celého projektu jsou závodnící ovládaní umělou intelignecí.
             Hlavním kritériem při jejich vývoji bylo předat sítím co největší kontrolu nad 
             autem samotným. 
 
-            \underline{\textbf{\large{Ovládání}}}
+            \vspace{2em}
             \begin{figure}[H]
             \centering
             \begin{minipage}[t]{.5\textwidth}
                 \centering
-                % \includegraphics[width=0.9\linewidth]{data/perceptron-model1.png}
-                \animatedgraphcs[autoplay,width=1\linewidth]{24}{data/forward/r_}{1}{54}
+                \animategraphics[loop,autoplay,trim = 5.5cm 5.5cm 5.5cm 5.5cm,width=0.9\linewidth]{60}{data/forward/r_}{1}{60}
             \end{minipage}%
             \begin{minipage}[t]{.5\textwidth}
                 \centering
-                % \includegraphics[width=0.85\linewidth]{data/easynn-scheme.png}
-                \animatedgraphcs[autoplay,width=1\linewidth]{24}{data/spin/r_}{1}{90}
+                \animategraphics[loop,autoplay,trim = 5.5cm 5.5cm 5.5cm 5.5cm,width=0.9\linewidth]{60}{data/spin/r_}{1}{90}
             \end{minipage}
             \captionof{figure}{Povolená ovládání vozidel}
             \label{fig:controlls}
@@ -271,48 +277,52 @@
 
             Ovládání závodníkům umožňuje celkovou kontrolu nad \textbf{rychlosti a zatáčení s proměnlivou
             sílou otáčení}. S touto možností se závodnící při dostatečném tréninku zvládají naučit
-            velmi optimalizované průjezdy závodními traťemi všeho druhu.\\
+            velmi optimalizované průjezdy závodními traťemi všeho druhu.
 
             \tab V architektuře neuronové sítě jsou do výstupní vrstvy zabudovány dva neurony.
-            První pracuje s určováním rychlosti a druhý se zatáčením. Hodnoty, které na těchto
-            neuronech můžeme dosáhnout jsou upraveny do \textbf{rozsahu -1.0 - 1.0}. Tímto způsobem 
+            První určuje ovládání rychlosti a druhý zatáčení. Hodnoty, kterých na těchto neuronech
+            může být dosaženo jsou upraveny do \textbf{rozsahu -1.0 - 1.0}. Tímto způsobem 
             má ovladač velkou kontrolu při rozhodování o síle zrychlení/zpomalení nebo o úhlu zatočení.
 
         \subsection{Kontrola prostředí}
-            Aby se ovládání mohlo rozhodovat, je potřeba mu dodat nějaká data z prostředí kolem 
-            jeho vozidla. Hlavním zdrojem informací (vstupní vrstva neuronové sítě) je 5
-            \textbf{dálkových senzorů}, které měří vzdálenost předního nárazníku od stěn před ním.
-            Paprsky senzorů jsou vysílány z předního středového bodu bod zorným úhlem 120\textdegree
-            s určitou maximální vzdáleností, které můžou dosáhnout. Poslední informací 
+            Aby se ovládání mohlo rozhodovat, je potřeba dodat data z prostředí kolem 
+            jeho vozidla. Hlavním zdrojem informací (vstupní vrstva neuronové sítě) je \textbf{5
+            dálkových senzorů}, které měří vzdálenost předního nárazníku od stěn před ním.
+            Paprsky senzorů jsou vysílány z předního středového bodu vozidla bod zorným úhlem 
+            120\textdegree{} s určitou maximální vzdáleností, které mohou dosáhnout. Poslední informací 
             je poté \textbf{interní časomíra vozidla}, která udává kolik proběhlo výpočtů od startu testu. 
 
+            \vspace{1em}
             \begin{figure}[H]
             \centering
             \begin{minipage}[t]{.5\textwidth}
                 \centering
-                \includegraphics[width=1\linewidth]{data/rays1.png}
+                \includegraphics[trim = 5cm 5cm 5cm 5cm, clip, width=0.9\linewidth]{data/rays1.png}
+                \caption*{Použité řešení}
             \end{minipage}%
             \begin{minipage}[t]{.5\textwidth}
                 \centering
-                \includegraphics[width=1\linewidth]{data/rays2.png}
+                \includegraphics[trim = 5cm 5cm 5cm 5cm, clip, width=0.9\linewidth]{data/rays2.png}
+                \caption*{Demonstrace paprsků}
             \end{minipage}
             \captionof{figure}{Práce měřících paprsků}
             \label{fig:rays}
             \end{figure}
+            \pagebreak
 
             \tab Vedle dálkových měřičů jsou ještě vozidla kontrolována proti kolizím s testovacím 
             prostředím. Případná kolize se stěnou závodní trati by ukončila testovací jízdu
             daného vozidla z generace a následně by byl vypočítán jeho výsledek (zdatnost).
-            Tuto kontrolu zajišťuje \textbf{5 senzorů po obvodu modelu vozidla} a kontrola
+            Tuto kontrolu zajišťuje \textbf{5 senzorů po obvodu modelu vozidla}. Kontrola
             kolize na nich probýhá každý výpočetní cyklus.
-            
             \begin{figure}[H]
                 \centering
-                \includegraphics[width=1\textwidth]{data/collisionpoints.png}
+                \includegraphics[trim = 7cm 7cm 7cm 7cm, clip, width=0.4\textwidth]{data/collisionpoints.png}
                 \captionof{figure}{Senzory kolize}
                 \label{fig:collisionpoints}
             \end{figure}
 
+        \vspace*{-3em}
         \subsection{Trénink závodníků}
             Pro trénování je nejdřív potřeba vytvořit testovací prostředí (trať) a vložit
             do ní pár kontrolních bodů (START, ZÁCHYTNÉ BODY). Potřeba zmínit,
@@ -324,46 +334,115 @@
             Je vypočítána zdatnost každého z nich, kde je potřeba určit \textbf{za co bude jedinec
             odměněň}. 
             
-            \underline{\textbf{Konfigurace odměn za výsledky na trati}}
-            \begin{tabular}[c]{ | l | l | l | l | p{5cm} | }
+            \begin{center}
+                \newcommand{\mr}[2]{
+                    \multirow{#1}{*}{#2}
+                }
+                \vspace*{-1.5em}
+                \hspace*{-4em}
+                \begin{tabular}{ | c | c | c | c | p{8cm} | }
+                    \hline
+                    & Délka života & Počet z.b.* & Pořadí na z.b.* & Chování \\ \hline
+                    \mr{2}{\textbf{Použito}} & \mr{2}{0,75} & \mr{2}{50} & \mr{2}{100} & Rychlé učení celé trati, po dokončení 
+                    snaha se na trati zrychlit.\\ \hline
+                    & \mr{2}{1} & \mr{2}{50} & \mr{2}{25} & Schopnost se trať naučit, pomalá jízda. Cena života větší než 
+                    průjezd záchytnými body.\\ \hline
+                    & \mr{3}{0,25} & \mr{3}{50} & \mr{3}{150} & \textit{"Nastavení závodník"} - Velká rychlost na záchytných bodech.
+                    Možné nevyřešení celé tratě. Délka života není tak cenná.\\
                 \hline
-                 & Délka života & Počet záchytných bodů & Pořadí na záchytných bodech & Chování \\ \hline
-                \textbf{Použito} & 0,75 & 50 & 100 & Nejlepší konfigurace. Jedinci jsou schopni rychlého učení celé trati,
-                snaží se ji celou dokončit a po dokončení se postupně snaží na trati zrychlit.\\ \hline
-                          & 1 & 50 & 25 & Jedinci jsou schopni se trať naučit, nicméně jezdí velmi pomalu.
-                Samotný život je cenější než snaha závodit o prvenství na záchytném bodě.\\ \hline
-                          & 0,25 & 50 & 150 &  \\ \textit{"Nastavení závodníků"} - Jedinci rychle
-                pochopí, že největší zisk není v délce života, ale v rychlosti na záchytných bodech,
-                což vede k velmi rychlým průjezdům. Nicméně se může stát, že žádný z jedinců trať nevyřeší celou.\hline
-                \label{tab:config}
-            \end{tabular}
+                \end{tabular}
+                \vspace*{-0.5em}
+                \captionof*{table}{* z.b. = záchytný bod}
+                \vspace*{-1em}
+                \captionof{table}{Konfigurace odměn za výsledky na trati}
+            \end{center}
 
-            \tab Po nalezení dobré konfigurace odměn a správné architektury sítě
+            Po nalezení spráné konfigurace odměn a vyhovující architektury sítě
             se výsledky při opakovaném testování chovají vždy velmi podobně.
             Začátek je o pomalém postupu, kde se může vyskytnout jedinec, který
             je schopen se na trati dostat dál. Tento posun (\textbf{správná genetická informace})
             se rychle šíří i mezi zbytek populace. Poté nastává zlomový bod, kdy se
             v jedné generaci objeví takový jedinec, který je schopen projet trať celou
-            (na základě více primitivního "vyhýbání se stěnám", než optimalizovaného průjezdu). 
-            Tato informace se posléze začíná šířit i mezi ostatní a začínají vznikat nové,
+            (pouze primitivního "vyhýbání se stěnám", než optimalizovaný průjezd). 
+            Tato informace se posléze začíná šířit i mezi ostatní jedince a začínají vznikat nové,
             lepší a rychlejší průjezdy. \textbf{V této fázi je problém (trať) vyřešen}.
             Toto řešení ale nemusí být to nejlepší, a tak i dál jde sledovat postupný nárůst
             úspěšnosti.\\
-            \tab Celý postup je na konci každé generace zaznamenáván do grafu.
-
+            Celý postup je na konci každé generace zaznamenáván do grafu.
             \begin{figure}[H]
-            \centering
-            \begin{minipage}[t]{.5\textwidth}
                 \centering
-                \includegraphics[width=1\linewidth]{../saves/f0.png}
-            \end{minipage}%
-            \begin{minipage}[t]{.5\textwidth}
-                \centering
-                \includegraphics[width=1\linewidth]{../saves/f1.png}
-            \end{minipage}
-            \captionof{figure}{Výsledky tréninků na dvou různých tratích}
-            \label{fig:results}
+                \begin{minipage}[t]{.5\textwidth}
+                    \centering
+                    \includegraphics[trim = 0 1cm 0 1cm, clip, width=1\linewidth]{../data/f0.png}
+                \end{minipage}%
+                \begin{minipage}[t]{.5\textwidth}
+                    \centering
+                    \includegraphics[trim = 0 1cm 0 1cm, clip,width=1\linewidth]{../data/f1.png}
+                \end{minipage}
+                \captionof{figure}{Výsledky tréninků na dvou různých tratích}
+                \label{fig:results}
             \end{figure}
 
+        \vspace{-2em}
+        \subsection{Inteligence}
+            \hfill
+            \vspace{-2em}
+            \begin{wrapfigure}[13]{r}{0.5\textwidth}
+                \centering
+                \animategraphics[loop,autoplay,width=0.8\linewidth]{24}{data/gif1/clever_anim-}{0}{158}
+                \caption{Vychytralost} 
+                \label{fig:intel}
+            \end{wrapfigure}
+            \\
+            \tab Díky velkému množství různých možností, které se při učení vyzkouší se ojediněle může stát,
+            že jedinci naleznou a využijí \textbf{chyby v systému}(v testovacím prostředí). 
+            A i u mého programu byla jedna taková chyba za mými zády objevena a velmi rychle zneužita.\\
+            Jednalo se o problém s průjezdem záchytným bodem, kdy zprvu v programu nebylo hlídáno, zda danný 
+            bod byl již jedincem překonán nebo ne. To vedlo k rychlému zneužití, protože jak již bylo řečeno,
+            za průjezd záchytným bodem se obrdží odměna. Toto byl velice rychlý a efektivní způsob zisku odměn.
+
+    \section{Závěr}
+        \tab I když se může zdát, že genetický algoritmus je plnohodnotnou variantou pro umělé inteligence
+        a strojové učení, jedná se pouze o praktické uplatnění správné teorie, která je ale založena na spoustě náhodných procesů.
+        Příroda tomuto postupu dává potřebný čas k nalezení téměř perfektních řešení každého problému.
+        Ale v počítačové vědě, i když vše lze zvládat ve velké rychlosti, příroda má navrch.
+        Proto existují různé systémy pro strojové učení, založené především na matematických postupech,
+        které již náhodně nebádají po správném řešení, ale jdou cílevědomě přímo k němu.\\
+        \tab Tento projekt může být pěknou ukázkou toho, jak přístupné nové technologie jsou pro veřejnost.
+        O problematiku umělých inteligencí se zajímam již přibližně 3-4 roky a absolutně
+        hlavním zdrojem vědomostí a informací je internet. Zájem o programování mi pak pomohl 
+        posunout tyto teoretické vědomosti do praxe skrz podobné programy.
+
+    \bigskip
+    \tableofcontents
+    \pagebreak
+    \listoffigures
+
+    \begin{thebibliography}{7}
+        \bibitem{c:perceptron}
+            SAPORITO, G. What is a perceptron?. Perceptron model [online]. 2019 [cited 2020-06-10]. 
+            Available from \url{https://miro.medium.com/max/1290/0*LJBO8UbtzK_SKMog}.
+
+        \bibitem{c:easynn}
+            NURAMI PUTRI, O. Titanic Prediction with Artificial Neural Network in R.. ANN model 
+            [online]. 2018 [cited 2020-06-10]. Available from \url{https://cdn-images-1.medium.com/proxy/1*RGV6Bb3ChmVWsA8Q6Qth6Q.png}.
+
+        \bibitem{c:relu}
+            SARKAR, K. ReLU : Not a Differentiable Function: 
+            Why used in Gradient Based Optimization? and Other Generalizations of ReLU.. [online]. 
+            2018 [cited 2020-10-06]. Available from \url{https://medium.com/@kanchansarkar/relu-not-a-differentiable-function-why-used-in-gradient-based-optimization-7fef3a4cecec}.
+        \bibitem{c:deepnn}
+            BRE, F. Prediction of wind pressure coefficients on building surfaces using 
+            Artificial Neural Networks. Artificial neural network architecture (ANN i-h 1-h 2-h n-o). 
+            [online]. 2017 [cited 2020-06-10]. Available from \url{https://www.researchgate.net/profile/Facundo_Bre/publication/321259051/figure/fig1/AS:614329250496529@1523478915726/Artificial-neural-network-architecture-ANN-i-h-1-h-2-h-n-o.png}.
+        \bibitem{c:crossover}
+            KUMAR, A. Genetic Algorithms. Operators of Genetic Algorithms [online]. 2018 
+            [cited 2020-06-10]. Available from \url{https://media.geeksforgeeks.org/wp-content/uploads/genetic-algorithm1.png}.
+
+        \bibitem{c:carmodel}
+            Clipart personal collection - Clipart Art [online]. 
+            Dostupné z: \url{https://clipartart.com/images/car-clipart-sprite-sheet-3.jpg}
+
+    \end{thebibliography}
 
 \end{document}
