@@ -59,6 +59,7 @@
 }
 
 \addto\captionsenglish{\renewcommand{\figurename}{Schéma}}
+\addto\captionsenglish{\renewcommand{\tablename}{Tabulka}}
 
 \addto\captionsenglish{\renewcommand{\contentsname}{Obsah}}
 \addto\captionsenglish{\renewcommand{\listfigurename}{Seznam obrázků}}
@@ -91,7 +92,7 @@
     \subsection{Umělá inteligence}
         Pojem \textbf{umělé inteligence} je dnes člověku prezentován v trochu zkreslené formě.
         Lidem se mohou vybavit některé sci-fi filmové scény s roboty, ale to není úplně přesné.
-        Ve slově \textit{inteligence} se doopravdy skrývá řada výpočtů zpracovávajících vstupní data 
+        Ve slově \textit{inteligence} se doopravdy skrývá řada výpočtů zpracovávajících \\vstupní data 
         na požadovaný výstup. Tyto výpočty se provádějí v předem definované 
         struktuře tzv. \textbf{neuronové sítě}.\\
             
@@ -173,7 +174,7 @@
         spoustě drobných úprav při hledání dobře pracující sítě.\\
         \tab Architektura, která je použita v prezentovaném programu, byla docílena řadou testů
         různých sítí proti sobě.\\\\
-        \textbf{Finální síť použitá v programu je ve schématu [6, 8, 4, 2]}\\
+        \textbf{Finální síť použitá v programu je ve schématu \{6, 8, 4, 2\}}\\
         5 vstupů měřících vzdálenost + 1 vstup měřící čas\\
         1 výstup pro rychlost + 1 výstup pro zatáčení
 
@@ -230,7 +231,7 @@
         \\
 
         V projektu je genetický algoritmus založen s populací o \textbf{50 členech}. 
-        Každý člen představuje náhodnou neuronovou síť (stejné architektury [6, 8, 4, 2]).
+        Každý člen představuje náhodnou neuronovou síť (stejné architektury \{6, 8, 4, 2\}).
         Kvůli zdánlivé obtížnosti úkolu a velikosti sítě jsem se rozhodl pro hodnotu 
         \textbf{pravděpodobnosti mutace = 2,5\%}. Zároveň pro snazší uchování nejlepší 
         genetické informace se nejlepší jedinec poslední generace přenáší do další.
@@ -322,7 +323,7 @@
             prostředím. Případná kolize se stěnou závodní trati by ukončila testovací jízdu
             daného vozidla z generace a následně by byl vypočítán jeho výsledek (zdatnost).
             Tuto kontrolu zajišťuje \textbf{5 senzorů po obvodu modelu vozidla}. Kontrola
-            kolize na nich probýhá každý výpočetní cyklus.
+            kolize na nich probíhá každý výpočetní cyklus.
             \begin{figure}[H]
                 \centering
                 \includegraphics[trim = 7cm 7cm 7cm 7cm, clip, width=0.4\textwidth]{data/collisionpoints.png}
@@ -340,7 +341,7 @@
 
             \tab Po nárazu všech závodníků nastává konec testování pro danou skupinu a 
             je vypočítána zdatnost každého z nich. Zde je potřeba určit \textbf{za co bude jedinec
-            odměněň}. 
+            odměněn}. 
             
             \begin{center}
                 \newcommand{\mr}[2]{
@@ -374,7 +375,7 @@
             (pouze primitivní "vyhýbání se stěnám", než optimalizovaný průjezd). 
             Tato informace se posléze začíná šířit i mezi ostatní jedince a začínají vznikat nové,
             lepší a rychlejší průjezdy. \textbf{V této fázi je problém (trať) vyřešen}.
-            Toto řešení ale nemusí být to nejlepší, a tak i dál jde sledovat postupný nárůst
+            Toto řešení ale nemusí být to nejlepší, a tak i dále jde sledovat postupný nárůst
             úspěšnosti.\\
             Celý postup je na konci každé generace zaznamenáván do grafu.
             \begin{figure}[H]
@@ -437,11 +438,13 @@
         \bibitem{c:relu}
             SARKAR, K. ReLU : Not a Differentiable Function: 
             Why used in Gradient Based Optimization? and Other Generalizations of ReLU.. [online]. 
-            2018 [cited 2020-10-06]. Available from \url{https://medium.com/@kanchansarkar/relu-not-a-differentiable-function-why-used-in-gradient-based-optimization-7fef3a4cecec}.
+            2018 [cited 2020-10-06]. Available from \url{https://medium.com/@kanchansarkar/relu-not-a-differentiable-function-why-used-in-gradient-based}\\\url{-optimization-7fef3a4cecec}.
+
         \bibitem{c:deepnn}
             BRE, F. Prediction of wind pressure coefficients on building surfaces using 
             Artificial Neural Networks. Artificial neural network architecture (ANN i-h 1-h 2-h n-o). 
             [online]. 2017 [cited 2020-06-10]. Available from \url{https://www.researchgate.net/profile/Facundo_Bre/publication/321259051/figure/fig1/AS:614329250496529@1523478915726/Artificial-neural-network-architecture-ANN-i-h-1-h-2-h-n-o.png}.
+
         \bibitem{c:crossover}
             KUMAR, A. Genetic Algorithms. Operators of Genetic Algorithms [online]. 2018 
             [cited 2020-06-10]. Available from \url{https://media.geeksforgeeks.org/wp-content/uploads/genetic-algorithm1.png}.
@@ -449,9 +452,10 @@
         \bibitem{c:carmodel}
             Clipart personal collection - Clipart Art [online]. 
             Dostupné z: \url{https://clipartart.com/images/car-clipart-sprite-sheet-3.jpg}
+
     \end{thebibliography}
 
-    \vspace{2em}
+    \vspace{0.75em}
     \begin{center}
         \footnotesize{
             \textbf{Vytvořeno v \LaTeX}
