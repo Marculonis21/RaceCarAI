@@ -164,6 +164,7 @@ class Car:
                     self.lastCheckpoint = "START"
                     self.done_checkpoints = []
                     self.info_distance = 0
+                    print("infoclear")
                     return 1
 
                 elif (c in CHECKPOINT_COLOR and 

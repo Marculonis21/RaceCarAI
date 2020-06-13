@@ -68,6 +68,7 @@ TRACK_IMAGE = None
 boundaries = []
 START_POSITION = (0,0) 
 START_ROTATION = 0
+RAY_VISIBILITY = False
 
 SETUPMODE = 0 #0 START; #1 START_ROTATION; 2 CHECKPOINTS 
 checkpoints = []
@@ -198,11 +199,14 @@ while True:
 
                 # SETUP CLEAR - N
                 if event.key == PG.K_n:
+                    SETUPMODE = 0
                     checkpoints = []
 
                 # REMOVE LAST CHECPOING - B
                 if event.key == PG.K_b:
                     checkpoints.pop()
+                    if(len(checkpoints) == 0):
+                        SETUPMODE = 0
 
                 # CAPTURE SCREEN -> TRAINING - ENTER 
                 if event.key == PG.K_RETURN and len(checkpoints) > 0 and SETUPMODE != 1:
@@ -211,10 +215,6 @@ while True:
                     TRACK_IMAGE = PG.image.load("data/track.png")
 
                     carList = [Car("data/carClipArt.jpg", 50) for car in range(POPULATION_SIZE)]
-
-                    ## messing around
-                    # START_POSITION = (400,400)
-                    # START_ROTATION = 0
 
                     # CAR PREPARATION
                     for car in carList:
@@ -248,13 +248,12 @@ while True:
 
                     MODE = TRACKDRAWING
 
-        # PLAYER CONTROLL - OUTDATED
-        # elif (MODE == TRAINING):
-        #     if event.type == PG.KEYDOWN:
-        #         if event.key == PG.K_LEFT:
-        #             carList[0].rel_rotate(15)
-        #         if event.key == PG.K_RIGHT:
-        #             carList[0].rel_rotate(-15)
+        elif(MODE == TRAINING):
+            if event.type == PG.KEYUP:
+                # CAR RAY_VISIBILITY
+                if event.key == PG.K_p:
+                    RAY_VISIBILITY = not RAY_VISIBILITY
+                
 
 #----------------------------------------------------STATE MACHINE-------|
 #----------------------------------------------------TRACKDRAW STATE-----|
@@ -367,7 +366,7 @@ while True:
                 info = []
                 for i in range(5):
                     angle = -60 + 30*i
-                    ray = rayCaster.cast(car.get_corner_points()[0], car.rotation + angle, 2, screen, True)
+                    ray = rayCaster.cast(car.get_corner_points()[0], car.rotation + angle, 2, screen, RAY_VISIBILITY)
                     info.append(ray[1]/200)
                     
                 info.append(car.info_distance/500)
