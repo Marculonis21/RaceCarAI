@@ -81,8 +81,8 @@
 
     \vspace{0.25cm}
     \section{O projektu}
-        \tab Tento projekt byl zpracován v roce 2020 jako maturitní práce 6.ročníku 
-        víceletého gymnázia Boženy Němcové v Hradci Králové.\\
+        \tab Tento projekt byl zpracován v roce 2020 jako maturitní z předmětu Informatika 
+        a výpočetní technika práce v 6.ročníku Gymnázia Boženy Němcové v Hradci Králové.\\
         \tab Hlavní myšlenkou je využití strojového učení umělé inteligence genetickým 
         algoritmem s cílem projetí uživatelem nastavené tratě. Výsledek snažení 
         je postupně promítán do grafu. Schopnost by se měla, i po dosažení cíle (projetí tratí),
@@ -113,15 +113,15 @@
         \end{figure}
 
         Neuronová síť je modelována s inspirací v mozkových neuronech. Každý bod je považován za
-        samostatný neuron a má řadu spojení, z biologie \textit{axonů}. Právě tato spojení jsou důležitou
-        funkční složkou neuronových sítí. V programu tedy vždy uchováváme číselnou hodnotu každého z nich.
-        Tato hodnota je obvykle reálné číslo v rozsahu od -1.0 do 1.0.
+        samostatný neuron a každý neuron je propojen s řadou dalších (\textit{podobně jako struktura mozku})
+        Právě tato spojení jsou důležitou funkční složkou neuronových sítí. V programu tedy vždy 
+        uchováváme číselnou hodnotu každého z nich. Tato hodnota je obvykle reálné číslo v rozsahu od -1.0 do 1.0.
         Neurony dělíme do vrstev (VSTUP, SKRYTÁ, VÝSTUP). Data ze sledovaného prostředí přenášíme
-        do vstupní vrstvy a výsledek pozoruje na vrstvě výstupní. Existuje pravidlo, že každý neuron z nižší vrstvy 
+        do vstupní vrstvy a výsledek pozoruje na vrstvě výstupní. Existuje pravidlo, že každý neuron z nižší vrstvy,
         je spojen se všemi neurony ve vyšší vrstvě. Nejjednodušším znázorněním neuronu je 
         Schéma~\ref{fig:perceptron}, skládající se z 3 vstupů a 1 výstupu.
         Jak se ale tvoří číselné hodnoty?
-
+        \vspace{-0.05em}
         \begin{equation}
             \sigma(\displaystyle\sum_{k=1}^{n}{x_k * w_k})
         \end{equation}
@@ -149,25 +149,25 @@
         \begin{flushleft}
             \vspace{-3.1em}
             Složitější neuronové sítě jsou už jen opakováním tohoto zavedeného postupu. Dále se pro sítě 
-            tohoto typu zavádí jméno \textbf{hluboká neuronová síť} (\textit{z ang. deep neural network}). 
+            tohoto typu zavádí termín \textbf{hluboká neuronová síť} (\textit{z ang. deep neural network}). 
             To označuje schéma, ve kterém je použita více než jedna skrytá vrstva.
         \end{flushleft}
 
         \vspace{-0.3em}
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.54\textwidth]{data/nn-scheme.png}
+            \includegraphics[width=0.51\textwidth]{data/nn-scheme.png}
             \captionof{figure}{Hluboká neuronová síť \cite{c:deepnn}}
             \label{fig:deepnn}
         \end{figure}
 
         Při práci s neuronovými sítěmi, abychom zvětšili přesnost výpočtů, upravujeme vstupy
         (první řadu neuronů) do určitého číselného rozsahu. Poté necháme proběhnout všechny 
-        matematické operace uvnitř sítě a sledujeme výsledek. To jak se program bude při daném 
-        výsledku chovat je opět pouze na volbě autora programu.\\\\
+        matematické operace uvnitř sítě a sledujeme výsledek. To, jak se program bude při daném 
+        výsledku chovat, je opět pouze na volbě autora programu.\\\\
         \tab Poté nastává \textbf{proces učení}, při kterém upravujeme hodnoty všech spojení v síti tak,
         aby při určitých vstupních hodnotách nastal požadovaný výstup. Pro učení existuje řada algoritmů
-        založených na různých matematických úpravách. Pro moji síť jsem ale zvolil postup učení,
+        založených na různých matematických úpravách. Pro moji síť jsem ale zvolil postup učení
         inspirovaný přírodou, tzv. \textbf{genetický algoritmus} (\textit{"O původu druhů" Charles Darwin - evoluční teorie}).\\\\
         \tab Samotná architektura (počet neuronů v každé z vrstev) je pro funkčnost velmi
         důležitá a neexistuje předem daný, jednoznačně správný postup. Tato část je tedy často o 
@@ -196,21 +196,21 @@
 
         \underline{\textbf{\large{Cyklus genetického algoritmu}}}
         \begin{enumerate}[itemsep=-1.5mm] \item Určíme, jak velký počet jedinců chceme testovat (\textbf{velikost populace})
-            \item Naplníme populaci náhodně generovanými jedinci
+            \item Naplníme populaci náhodně generovanými jedinci.
             \begin{itemize}[noitemsep]
                 \item každý jedinec je abstrakcí jedné náhodné neuronové sítě
                 \item všechna spojení sítě tvoří genetickou informaci
             \end{itemize}
-            \item Celou populaci vyzkoušíme v testovacím prostředí a zapíšeme jejich \textbf{zdatnost} 
-                v zadaném problému
-            \item Z populace pseudo-náhodně vybereme skupinu rodičů nové generace 
+            \item Všechny jedince v populaci vyzkoušíme v testovacím prostředí a zapíšeme jejich \textbf{zdatnost}
+                v zadaném problému.
+            \item Z populace pseudo-náhodně vybereme skupinu rodičů nové generace.
             \begin{itemize}[noitemsep]
                 \item ti s \textbf{vyšší zdatností mají větší šanči} být zvoleni mezi rodiče
                 \item každý z jedinců může být zvolen opakovaně
             \end{itemize}
             \item Ze skupiny rodičů náhodně vybereme vždy dva jedince a náhodným poskládáním jejich
-                genetických informací vytvoříme dva nové potomky (\textbf{genetický crossover} Schéma~\ref{fig:crossover})
-            \item Každý gen každého potomka má určitou šanci náhodně zmutovat
+                genetických informací vytvoříme dva nové potomky (\textbf{genetický crossover} Schéma~\ref{fig:crossover}).
+            \item Každý gen každého potomka má určitou šanci náhodně zmutovat.
             \begin{itemize}[noitemsep]
                 \item hodnotu této náhody musíme určit
                 \item \textbf{pravděpodobnost mutace} se obvykle pohybuje mezi 1\% - 5\%\\
@@ -218,7 +218,7 @@
                     Příliš velká hodnota a mutace může rozbít správná řešení.
 
             \end{itemize}
-            \item Do splnění požadavků opakujeme kroky 3 - 6, při kterých by se měli 
+            \item Do splnění požadavků opakujeme kroky 3 - 6, při kterých by se měli.
                 objevovat stále lepší a lepší jedinci.
         \end{enumerate}
         \hrule
@@ -230,7 +230,7 @@
         Teorie ale funguje, a tak jsme tímto způsobem schopni dojít správných výsledků.
         \\
 
-        V projektu je genetický algoritmus založen s populací o \textbf{50 členech}. 
+        V tomto projektu je genetický algoritmus založen s populací o \textbf{50 členech}. 
         Každý člen představuje náhodnou neuronovou síť (stejné architektury \{6, 8, 4, 2\}).
         Kvůli zdánlivé obtížnosti úkolu a velikosti sítě jsem se rozhodl pro hodnotu 
         \textbf{pravděpodobnosti mutace = 2,5\%}. Zároveň pro snazší uchování nejlepší 
@@ -333,8 +333,8 @@
 
         \vspace*{-3em}
         \subsection{Trénink}
-            Pro trénování je nejdřív potřeba vytvořit testovací prostředí (trať) a vložit
-            do ní pár kontrolních bodů (START, ZÁCHYTNÉ BODY). Potřeba zmínit,
+            Před trénováním se musí vytvořit testovací prostředí (trať) a vložit
+            do ní pár kontrolních bodů (START, ZÁCHYTNÉ BODY). Je potřeba zmínit,
             že každý trénink, i když bude prováděn na totožné trati, bude odlišný od těch
             předchozích. Příčinou je náhodnost celého procesu a styl jakým jsou vytvářeni
             náhodní jedinci pro první generaci testování.
@@ -403,9 +403,9 @@
                 \label{fig:intel}
             \end{wrapfigure}
             \\
-            \tab Díky velkému množství různých možností, které se při učení vyzkouší se ojediněle může stát,
+            \tab Díky velkému množství různých možností, které se při učení vyzkouší, se ojediněle může stát,
             že jedinci naleznou a využijí \textbf{chyby v systému}(v testovacím prostředí). 
-            A i u mého programu byla jedna taková chyba za mými zády objevena a velmi rychle zneužita.\\
+            I u mého programu se jedna taková chyba objevila a byla závodníky velmi rychle zneužita.\\
             Jednalo se o problém s průjezdem záchytným bodem, kdy zprvu v programu nebylo hlídáno, zda danný 
             bod byl již jedincem překonán nebo ne. To vedlo k rychlému zneužití, protože jak již bylo řečeno,
             za průjezd záchytným bodem se obrdží odměna. Toto byl velice rychlý a efektivní způsob zisku bodů.
@@ -417,10 +417,9 @@
         Ale v počítačové vědě, i když vše lze zvládat ve velké rychlosti, příroda má navrch.
         Proto existují různé systémy pro strojové učení, založené především na matematických postupech,
         které již náhodně nebádají po správném řešení, ale jdou cílevědomě přímo k němu.\\
-        \tab Tento projekt může být pěknou ukázkou toho, jak přístupné nové technologie jsou pro veřejnost.
-        O problematiku umělých inteligencí se zajímam již přibližně 3-4 roky a absolutně
-        hlavním zdrojem vědomostí a informací je internet. Zájem o programování mi pak pomohl 
-        posunout tyto teoretické vědomosti do praxe skrz podobné programy.
+        \tab Tento projekt může být pěknou ukázkou toho, jak jsou nové technologie přístupné pro veřejnost.
+        O problematiku umělých inteligencí se zajímam již přibližně 3-4 roky. 
+        Zájem o programování mi pak pomohl posunout tyto teoretické vědomosti do praxe skrz podobné programy.
 
     \bigskip
     \tableofcontents
@@ -455,7 +454,7 @@
 
     \end{thebibliography}
 
-    \vspace{0.75em}
+    \vspace{2em}
     \begin{center}
         \footnotesize{
             \textbf{Vytvořeno v \LaTeX}
