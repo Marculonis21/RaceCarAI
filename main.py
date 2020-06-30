@@ -358,6 +358,12 @@ while True:
                             
         # MAIN CAR-LOOP
         done = True
+        best_car = None
+        if(carList[0].distance > 0):
+            best_current = [c for c in carList if c.alive]
+            if(len(best_current) > 0):
+                best_car = sorted(best_current, key = lambda x: x.distance).pop()
+
         for index, car in enumerate(carList):
             if(car.alive):
                 done = False
@@ -403,8 +409,10 @@ while True:
                 # for point in car.get_corner_points():
                 #     PG.draw.circle(screen, PG.Color('white'), point, 3, 0)
 
+            
             # CAR DRAWING
-            car.update(screen)
+            car.update(screen, car==best_car)
+
 
         # PG.image.save(screen, "./record/pic.png".format(car.life_counter))
         # quit()
