@@ -17,4 +17,3 @@ Uživatel nadefinuje trať, auto (GA) se senzory se pak učí trať projet.
     - **startovní checpoint**
 * [x] "Collision detection"
 * [x] GA NN pro auto
-    - **potřeba si trochu hrát s nastavením**
