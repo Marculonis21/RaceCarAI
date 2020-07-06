@@ -16,7 +16,6 @@ class Car:
         self.orig_image = PG.transform.scale(self.orig_image, (size,int(size*r)))
         self.image = self.orig_image.copy()
 
-
         # ATTRIBUTES
         self.startPosition = (0,0)
         self.startRotation = 0
@@ -41,10 +40,18 @@ class Car:
         self.rotation = 0
 
 
-    def update(self, screen):
+    def update(self, screen, best):
         ''' PYGAME DRAWING '''
         if(self.alive):
-            screen.blit(self.image, self.get_center_pos(self.position))
+            if(best):
+                victorious = self.image.copy()
+                victorious.fill((255, 0, 0, 255), None, PG.BLEND_RGBA_MULT)
+                victorious.fill((100,0,0) + (0,) , None, PG.BLEND_RGBA_ADD)
+            
+                screen.blit(victorious, self.get_center_pos(self.position))
+            else:
+                screen.blit(self.image, self.get_center_pos(self.position))
+
             self.life_counter += 1
             if(self.life_counter > 1000):
                 self.alive = False
@@ -164,7 +171,6 @@ class Car:
                     self.lastCheckpoint = "START"
                     self.done_checkpoints = []
                     self.info_distance = 0
-                    print("infoclear")
                     return 1
 
                 elif (c in CHECKPOINT_COLOR and 
