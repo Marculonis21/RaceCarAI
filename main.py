@@ -20,8 +20,8 @@ import Controller as Ctrl
 def plotValues(v1, v2, v3):
     plt.cla()
 
-    plt.plot(v1)
-    plt.plot(v2)
+    plt.plot(v1) 
+    plt.plot(v2) 
     plt.plot(v3)
 
 # STATE MODES
