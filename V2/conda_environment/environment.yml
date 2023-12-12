@@ -1,0 +1,13 @@
+name: RaceCarAI
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - matplotlib=3.6.2
+  - numpy=1.22.3
+  - pygame=2.5.2
+  - pip
+  - pip:
+    - dearpygui
+    # - neat-python==0.92
