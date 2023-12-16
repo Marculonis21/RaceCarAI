@@ -9,5 +9,5 @@ dependencies:
   - pygame=2.5.2
   - pip
   - pip:
-    - dearpygui
-    # - neat-python==0.92
+    - imgui
+    - imgui[pygame]
