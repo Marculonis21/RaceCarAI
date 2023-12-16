@@ -22,16 +22,15 @@ class App:
 
     def Run(self):
         boundary_map = BoundaryLoop.boundary_loop(self.screen, self.clock)
-        checkpoints, start_position, start_rotation = CheckpointLoop.checkpoint_loop(self.screen, self.clock, boundary_map)
+        map, checkpoints, start_position, start_rotation = CheckpointLoop.checkpoint_loop(self.screen, self.clock, boundary_map)
 
-        cars = Car.Cars(1, start_position, start_rotation)
-        cars.reset()
+        cars = Car.Cars(2, start_position, start_rotation)
 
-        surface = PG.surfarray.make_surface(boundary_map)
+        surface = PG.surfarray.make_surface(map)
         while True:
             self.screen.blit(surface, (0,0))
-            for c in checkpoints:
-                c.draw()
+
+            cars.draw(self.screen)
 
             for event in PG.event.get():
                 if event.type == PG.QUIT:
@@ -40,8 +39,7 @@ class App:
             keys = PG.key.get_pressed()  # Checking pressed keys
             cars.input(0, (keys[PG.K_UP], keys[PG.K_DOWN], keys[PG.K_LEFT], keys[PG.K_RIGHT]))
 
-            cars.update()
-            cars.draw(self.screen)
+            cars.update(map, checkpoints)
 
             PG.display.flip()
             self.clock.tick(60)

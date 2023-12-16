@@ -9,7 +9,7 @@ from src import Colors
 import sys
 import numpy as np
 
-def checkpoint_loop(screen : PG.Surface, clock : PG.time.Clock, boundary_map : np.ndarray) -> tuple[list[Boundary.Checkpoint], int]:
+def checkpoint_loop(screen : PG.Surface, clock : PG.time.Clock, boundary_map : np.ndarray) -> tuple[np.ndarray, list[Boundary.Checkpoint], tuple[int,int], int]:
     assert boundary_map is not None, "Boundary loop should be run first"
 
     def set_start(p1,p2):
@@ -53,13 +53,18 @@ def checkpoint_loop(screen : PG.Surface, clock : PG.time.Clock, boundary_map : n
             clock.tick(60)
 
     def set_checkpoint(p1,p2):
-        checkpoints.append(Boundary.Checkpoint(screen, Colors.CHECKPOINT_COLOR, p1, p2))
+        color = (Colors.CHECKPOINT_COLOR[0],
+                 Colors.CHECKPOINT_COLOR[1],
+                 Colors.CHECKPOINT_COLOR[2] - len(checkpoints)-1)
+
+        checkpoints.append(Boundary.Checkpoint(screen, color, p1, p2))
 
     surface = PG.surfarray.make_surface(boundary_map)
     ray_caster = RayCaster.RayCaster(boundary_map, Colors.WALL_COLOR, 200)
     # ray_caster.visible = True
 
     checkpoints : list[Boundary.Checkpoint] = []
+    start_position = (0,0)
     start_rotation = 0
 
     while True:
@@ -105,7 +110,7 @@ def checkpoint_loop(screen : PG.Surface, clock : PG.time.Clock, boundary_map : n
 
             if event.type == PG.KEYUP:
                 if event.key == PG.K_RETURN:
-                    return checkpoints, start_rotation
+                    return PG.surfarray.array3d(screen), checkpoints, checkpoints[0].pos, start_rotation
 
         PG.display.flip()
         clock.tick(60)
