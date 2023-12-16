@@ -29,6 +29,7 @@ class Checkpoint:
         self.color = color
         self.start = start
         self.end = end
+        self.pos = ((start[0] + end[0])//2, (start[1]+end[1])//2)
 
     def draw(self):
         PG.draw.line(self.screen, self.color, self.start, self.end, 5)

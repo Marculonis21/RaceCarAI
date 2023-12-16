@@ -1,42 +1,44 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import pygame as PG
 import numpy as np
 
 class Car:
-    def __init__(self, path="data/carClipArt.jpg", size=50):
-        # CAR IMAGE
-        self.orig_image = PG.image.load(path)
+    # def __init__(self, path="data/carClipArt.jpg", size=50):
+    #     # CAR IMAGE
+    #     self.orig_image = PG.image.load(path)
 
-        w = self.orig_image.get_rect().size[1]
-        h = self.orig_image.get_rect().size[0]
-        r = w/h
+    #     w = self.orig_image.get_rect().size[1]
+    #     h = self.orig_image.get_rect().size[0]
+    #     r = w/h
 
-        self.orig_image = PG.transform.scale(self.orig_image, (size,int(size*r)))
-        self.image = self.orig_image.copy()
+    #     self.orig_image = PG.transform.scale(self.orig_image, (size,int(size*r)))
+    #     self.image = self.orig_image.copy()
 
-        # ATTRIBUTES
-        self.start_position = (0,0)
-        self.start_rotation = 0
-        self.start_speed = 3
+    #     # ATTRIBUTES
+    #     self.start_position = (0,0)
+    #     self.start_rotation = 0
+    #     self.start_speed = 3
 
-        self.speed = 0
-        self.min_speed = 2.5
+    #     self.speed = 0
+    #     self.min_speed = 2.5
 
-        # CURRENT LIFE ATTRIBUTES
-        self.alive = False
-        self.life_counter = 0
-        self.distance = 0
-        self.info_distance = 0
+    #     # CURRENT LIFE ATTRIBUTES
+    #     self.alive = False
+    #     self.life_counter = 0
+    #     self.distance = 0
+    #     self.info_distance = 0
 
-        # TRACK INFO
-        self.checkpoints = []
-        self.done_checkpoints = []
-        self.last_checkpoint = None
+    #     # TRACK INFO
+    #     self.checkpoints = []
+    #     self.done_checkpoints = []
+    #     self.last_checkpoint = None
 
-        # POSITIONAL ATTRIBUTES
-        self.position = (0,0)
-        self.rotation = 0
+    #     # POSITIONAL ATTRIBUTES
+    #     self.position = (0,0)
+    #     self.rotation = 0
 
     # def update(self):
     #     ## TODO: LIFE COUNTER
@@ -92,55 +94,42 @@ class Car:
     #     return (int(self.position[0]),int(self.position[1]))
 
     @staticmethod
-    def get_center_pos(pos, img_width, img_height):
-        return (int(pos[0] - int(img_width/2)), int(pos[1] - int(img_height/2)))
+    def get_center_pos(pos, image):
+        return (int(pos[0] - image.get_width()/2), int(pos[1] - image.get_height()/2))
 
-    def rel_rotate(self, angle):
-        ''' ROTATE RELATIVE TO ACTUAL ROT '''
-        self.rotation += angle
-        if(self.rotation < -360):
-            self.rotation += 360
-        if(self.rotation > 360):
-            self.rotation -= 360
+    # def rel_rotate(self, angle):
+    #     ''' ROTATE RELATIVE TO ACTUAL ROT '''
+    #     self.rotation += angle
+    #     if(self.rotation < -360):
+    #         self.rotation += 360
+    #     if(self.rotation > 360):
+    #         self.rotation -= 360
 
-        self.image = PG.transform.rotate(self.orig_image, self.rotation)
+    #     self.image = PG.transform.rotate(self.orig_image, self.rotation)
 
-    def abs_rotate(self, angle):
-        ''' ABSOLUTE ROT/ROT SETTER '''
-        self.rotation = angle
-        self.image = PG.transform.rotate(self.orig_image, self.rotation)
+    # def abs_rotate(self, angle):
+    #     ''' ABSOLUTE ROT/ROT SETTER '''
+    #     self.rotation = angle
+    #     self.image = PG.transform.rotate(self.orig_image, self.rotation)
 
-    def get_corner_points(self):
+    @staticmethod
+    def get_corner_points(pos, rotation, image):
         ''' GET CORNER POSITIONS - COLLISION DETECTION '''
-        car_height = self.orig_image.get_height()
-        car_width = self.orig_image.get_width()
+        car_height = image.get_height()
+        car_width = image.get_width()
 
-        # CORNER ESTIMATION
-        angle = 23
-        c = math.sqrt((car_height/2)**2 + (car_width/2)**2) - 6 
+        up = np.array([np.cos(np.radians(rotation)), -np.sin(np.radians(rotation))])
+        right = np.cross(np.r_[up,0], np.array([0,0,-1]))[:2]
 
-        xx = math.cos(math.radians(self.rotation)) * car_width/2
-        yy = math.sin(math.radians(self.rotation)) * car_width/2
+        NN = pos + up*car_height + right*0
 
-        x1 = math.cos(math.radians(self.rotation-angle)) * c
-        y1 = math.sin(math.radians(self.rotation-angle)) * c
-        x2 = math.cos(math.radians(self.rotation+angle)) * c
-        y2 = math.sin(math.radians(self.rotation+angle)) * c
+        NE = pos + (up*(car_height-5)) + (right*car_width/5)
+        NW = pos + (up*(car_height-5)) - (right*car_width/5)
 
-        x3 = math.cos(math.radians(self.rotation+180-angle)) * c
-        y3 = math.sin(math.radians(self.rotation+180-angle)) * c
-        x4 = math.cos(math.radians(self.rotation+180+angle)) * c
-        y4 = math.sin(math.radians(self.rotation+180+angle)) * c
+        SE = pos + (up*(-car_height+2)) + (right*car_width/5)
+        SW = pos + (up*(-car_height+2)) - (right*car_width/5)
 
-        center_pos = self.position
-        NN = (int(center_pos[0] + xx), int(center_pos[1] - yy))
-
-        NE = (int(center_pos[0] + x1), int(center_pos[1] - y1))
-        NW = (int(center_pos[0] + x3), int(center_pos[1] - y3))
-        SE = (int(center_pos[0] + x2), int(center_pos[1] - y2))
-        SW = (int(center_pos[0] + x4), int(center_pos[1] - y4))
-
-        return (NN,NE,SE,NW,SW)
+        return up, right, NN, NE, NW, SE, SW
 
     def collision_detection(self, TRACK_IMAGE, WALL_COLOR, START_COLOR, CHECKPOINT_COLOR):
         ''' COLLISION DETECTION FROM CORNER POINTS '''
@@ -178,27 +167,27 @@ class Car:
                     return 0
         # return code: -1 = wall; 0 = empty; 1 = start; 2 = checkpoint 
 
-    def calc_fitness(self, life_value, check_value, speed_value, leaderboard):
-        ''' FULL FITNESS CALCULATION '''
-        population_size = len(leaderboard)
+    # def calc_fitness(self, life_value, check_value, speed_value, leaderboard):
+    #     ''' FULL FITNESS CALCULATION '''
+    #     population_size = len(leaderboard)
 
-        fitness = 0
-        fitness += self.distance*life_value
-        fitness += len(self.checkpoints)*check_value
+    #     fitness = 0
+    #     fitness += self.distance*life_value
+    #     fitness += len(self.checkpoints)*check_value
 
-        for loop in range(len(self.checkpoints)):
-            ch = [_ch for _ch in leaderboard if len(_ch) >= loop+1]
+    #     for loop in range(len(self.checkpoints)):
+    #         ch = [_ch for _ch in leaderboard if len(_ch) >= loop+1]
 
-            if not (len(ch) > 1): 
-                fitness += speed_value
-                continue
+    #         if not (len(ch) > 1): 
+    #             fitness += speed_value
+    #             continue
                 
-            ch = sorted(ch, key = lambda x: x[loop])
+    #         ch = sorted(ch, key = lambda x: x[loop])
 
-            rank = ch.index(self.checkpoints)
-            fitness += speed_value - rank*(speed_value/len(ch))
+    #         rank = ch.index(self.checkpoints)
+    #         fitness += speed_value - rank*(speed_value/len(ch))
 
-        return int(fitness)
+    #     return int(fitness)
 
 class Cars:
     def __init__(self, count, start_position, start_rotation):
@@ -227,7 +216,6 @@ class Cars:
         self.START_SPEED = 3
 
 
-
     def __init_image(self):
         image = PG.image.load("./data/carClipArt.jpg")
         size = 50
@@ -239,9 +227,6 @@ class Cars:
         self.car_image = PG.transform.scale(image, (size,int(size*r)))
         
     def draw(self, screen):
-        w = self.car_image.get_width()
-        h = self.car_image.get_height()
-
         for i in range(self.count):
             image = self.car_image.copy()
             if self.alive_list[i]:
@@ -253,7 +238,20 @@ class Cars:
                 image.fill((50, 50, 50, 210), None, PG.BLEND_RGBA_MULT)
                 image.fill((0,0,0) + (0,) , None, PG.BLEND_RGBA_ADD)
 
-            screen.blit(image, Car.get_center_pos(self.positions[i],w,h))
+            image = PG.transform.rotate(self.car_image, self.rotations[i])
+            screen.blit(image, Car.get_center_pos(self.positions[i], image))
+
+
+            up, right, NN, NE, NW, SE, SW = Car.get_corner_points(self.positions[i], self.rotations[i], self.car_image) # using orig image
+
+            # PG.draw.line(screen, PG.Color(255,0,0), self.positions[i], self.positions[i]+20*up, 2)
+            # PG.draw.line(screen, PG.Color(255,0,0), self.positions[i], self.positions[i]+20*right, 2)
+
+            # PG.draw.circle(screen, PG.Color(255,0,0), NN, 2)
+            # PG.draw.circle(screen, PG.Color(255,0,0), NE, 2)
+            # PG.draw.circle(screen, PG.Color(255,0,0), NW, 2)
+            # PG.draw.circle(screen, PG.Color(255,0,0), SE, 2)
+            # PG.draw.circle(screen, PG.Color(255,0,0), SW, 2)
 
     def update(self):
         self.life_counters += self.alive_list
@@ -265,8 +263,8 @@ class Cars:
         self.speeds[self.speeds < self.MIN_SPEED] = self.MIN_SPEED 
 
         # MOVE
-        dx = (self.speeds * np.cos(np.radians(self.rotations)))
-        dy = (self.speeds * np.sin(np.radians(self.rotations)))
+        dx = (self.speeds *  np.cos(np.radians(self.rotations)))
+        dy = (self.speeds * -np.sin(np.radians(self.rotations)))
 
         self.distances += np.sqrt(dx**2 + dy**2)
 
@@ -280,3 +278,13 @@ class Cars:
         self.rotations[:] = self.START_ROTATION
         self.speeds[:] = self.START_SPEED
 
+    def input(self, i, input : tuple[bool, bool, bool, bool]):
+        if input[0]:
+            self.speeds[i] += 0.5
+        elif input[1]:
+            self.speeds[i] -= 0.5
+
+        if input[2]:
+            self.rotations[i] += 1
+        elif input[3]:
+            self.rotations[i] -= 1
