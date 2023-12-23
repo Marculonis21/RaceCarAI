@@ -38,6 +38,7 @@ class App:
 
             keys = PG.key.get_pressed()  # Checking pressed keys
             cars.input(0, (keys[PG.K_UP], keys[PG.K_DOWN], keys[PG.K_LEFT], keys[PG.K_RIGHT]))
+            # cars.input(0, (keys[PG.K_UP], keys[PG.K_DOWN], keys[PG.K_LEFT], keys[PG.K_RIGHT]))
 
             cars.update(map, checkpoints)
 

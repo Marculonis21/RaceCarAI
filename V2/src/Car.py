@@ -9,93 +9,6 @@ from src import Colors
 from src import Boundary
 
 class Car:
-    # def __init__(self, path="data/carClipArt.jpg", size=50):
-    #     # CAR IMAGE
-    #     self.orig_image = PG.image.load(path)
-
-    #     w = self.orig_image.get_rect().size[1]
-    #     h = self.orig_image.get_rect().size[0]
-    #     r = w/h
-
-    #     self.orig_image = PG.transform.scale(self.orig_image, (size,int(size*r)))
-    #     self.image = self.orig_image.copy()
-
-    #     # ATTRIBUTES
-    #     self.start_position = (0,0)
-    #     self.start_rotation = 0
-    #     self.start_speed = 3
-
-    #     self.speed = 0
-    #     self.min_speed = 2.5
-
-    #     # CURRENT LIFE ATTRIBUTES
-    #     self.alive = False
-    #     self.life_counter = 0
-    #     self.distance = 0
-    #     self.info_distance = 0
-
-    #     # TRACK INFO
-    #     self.checkpoints = []
-    #     self.done_checkpoints = []
-    #     self.last_checkpoint = None
-
-    #     # POSITIONAL ATTRIBUTES
-    #     self.position = (0,0)
-    #     self.rotation = 0
-
-    # def update(self):
-    #     ## TODO: LIFE COUNTER
-    #     # self.life_counter += 1
-    #     # if self.life_counter > 1000:
-    #     #     self.alive = False
-
-    #     # CHECK FOR SPEED LIMIT
-    #     if self.speed < self.min_speed:
-    #         self.speed = self.min_speed
-
-    #     # MOVE
-    #     dx = (self.speed * np.cos(np.radians(self.rotation)))
-    #     dy = (self.speed * np.sin(np.radians(self.rotation)))
-
-    #     self.distance += np.sqrt(dx**2 + dy**2)
-    #     self.info_distance = self.distance
-        
-    #     self.position = (self.position[0] + dx, self.position[1] - dy)
-
-    # def draw(self, screen, best):
-    #     ''' PYGAME DRAWING '''
-    #     if self.alive:
-    #         if best:
-    #             image.fill((255, 0, 0, 255), None, PG.BLEND_RGBA_MULT)
-    #             image.fill((100,0,0) + (0,) , None, PG.BLEND_RGBA_ADD)
-
-    #     else:
-    #         image.fill((50, 50, 50, 210), None, PG.BLEND_RGBA_MULT)
-    #         image.fill((0,0,0) + (0,) , None, PG.BLEND_RGBA_ADD)
-
-    #     screen.blit(image, self.get_center_pos(self.position))
-
-    # def reset(self):
-    #     ''' POS/ROT/STATE RESET '''
-    #     self.set_pos(self.startPosition)
-    #     self.abs_rotate(self.startRotation)
-    #     self.speed = self.startSpeed
-    #     self.checkpoints = []
-    #     self.done_checkpoints = []
-    #     self.life_counter = 0
-
-    #     self.distance = 0
-    #     self.info_distance = 0
-    #     self.alive = True
-
-    # def set_pos(self, pos):
-    #     ''' POS SETTER '''
-    #     self.position = pos
-
-    # def get_pos(self):
-    #     ''' POS GETTER '''
-    #     return (int(self.position[0]),int(self.position[1]))
-
     @staticmethod
     def get_center_pos(pos, image):
         return (int(pos[0] - image.get_width()/2), int(pos[1] - image.get_height()/2))
@@ -119,42 +32,6 @@ class Car:
         SW = pos + (up*(-car_height+2)) - (right*car_width/5)
 
         return up, right, NN.astype(int), NE.astype(int), NW.astype(int), SE.astype(int), SW.astype(int)
-
-    # def collision_detection(self, TRACK_IMAGE, WALL_COLOR, START_COLOR, CHECKPOINT_COLOR):
-    #     ''' COLLISION DETECTION FROM CORNER POINTS '''
-    #     colliders = [WALL_COLOR, START_COLOR, CHECKPOINT_COLOR]
-    #     testPoints = self.get_corner_points()
-
-    #     for index, p in enumerate(testPoints):
-    #         c = TRACK_IMAGE.get_at(p)
-
-    #         if(c in colliders or c in CHECKPOINT_COLOR):
-    #             if (c == WALL_COLOR):
-    #                 self.alive = False
-    #                 return -1
-
-    #             elif (c == START_COLOR and 
-    #                   index == 0 and 
-    #                   self.lastCheckpoint != "START"):
-
-    #                 self.checkpoints.append(self.life_counter)
-    #                 self.lastCheckpoint = "START"
-    #                 self.done_checkpoints = []
-    #                 self.info_distance = 0
-    #                 return 1
-
-    #             elif (c in CHECKPOINT_COLOR and 
-    #                   c not in self.done_checkpoints and
-    #                   index == 0):
-
-    #                 self.checkpoints.append(self.life_counter)
-    #                 self.lastCheckpoint = "CHECK"
-    #                 self.done_checkpoints.append(c)
-    #                 return 2
-
-    #             else:
-    #                 return 0
-    #     # return code: -1 = wall; 0 = empty; 1 = start; 2 = checkpoint 
 
     # def calc_fitness(self, life_value, check_value, speed_value, leaderboard):
     #     ''' FULL FITNESS CALCULATION '''
@@ -192,10 +69,7 @@ class Cars:
 
         self.alive_list = np.ones([count])
 
-        # TRACK INFO
-        # self.checkpoints = []
-        # self.done_checkpoints = []
-        # self.last_checkpoint = None
+        self.last_start_counter = np.zeros([count])
 
         self.START_POSITION = start_position
         self.START_ROTATION = start_rotation
@@ -203,11 +77,11 @@ class Cars:
         self.MIN_SPEED = 2.5
         self.START_SPEED = 3
 
-        # ready to use after init
-        self.reset()
-
         self.checkpoint_rankings : list[list[tuple[int, float]]] = [[(0,0)] for _ in range(self.count)]
 
+        # ready to use after init
+        self.reset()
+        
     def __init_image(self):
         image = PG.image.load("./data/carClipArt.jpg")
         size = 50
@@ -267,6 +141,10 @@ class Cars:
                     if self.checkpoint_rankings[id][-1][0] == i-1 or \
                        (self.checkpoint_rankings[id][-1][0] == len(checkpoints)-1 and i == 0):
                         self.checkpoint_rankings[id].append((i, self.life_counters[id]))
+                        if c.color == Colors.START_COLOR:
+                            self.last_start_counter[id] = self.life_counters[id]
+
+        print(self.checkpoint_rankings)
 
     def update(self, map, checkpoints):
         self.life_counters += self.alive_list
