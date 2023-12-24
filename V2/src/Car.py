@@ -7,6 +7,7 @@ import numpy as np
 
 from src import Colors
 from src import Boundary
+from src import WorldData
 
 class Car:
     @staticmethod
@@ -56,7 +57,7 @@ class Car:
     #     return int(fitness)
 
 class Cars:
-    def __init__(self, count, start_position, start_rotation):
+    def __init__(self, count, world_data : WorldData.World):
         self.__init_image()
         self.count = count
 
@@ -71,8 +72,7 @@ class Cars:
 
         self.last_start_counter = np.zeros([count])
 
-        self.START_POSITION = start_position
-        self.START_ROTATION = start_rotation
+        self.world_data = world_data
 
         self.MIN_SPEED = 2.5
         self.START_SPEED = 3
@@ -119,34 +119,34 @@ class Cars:
                 PG.draw.circle(screen, PG.Color(255,0,0), SE[0], 2)
                 PG.draw.circle(screen, PG.Color(255,0,0), SW[0], 2)
 
-    def __collision_handling(self, map : np.ndarray, checkpoints : list[Boundary.Checkpoint]):
+    def __collision_handling(self):
         # Collision detection
         _, _, NN, NE, NW, SE, SW = Car.get_corner_points(self.positions, self.rotations, self.car_image) # using orig image
 
-        tests = np.c_[map[NN[:,0], NN[:,1]], 
-                      map[NE[:,0], NE[:,1]],
-                      map[NW[:,0], NW[:,1]],
-                      map[SE[:,0], SE[:,1]],
-                      map[SW[:,0], SW[:,1]]].reshape(self.count,5,3)
+        tests = np.c_[self.world_data.map[NN[:,0], NN[:,1]], 
+                      self.world_data.map[NE[:,0], NE[:,1]],
+                      self.world_data.map[NW[:,0], NW[:,1]],
+                      self.world_data.map[SE[:,0], SE[:,1]],
+                      self.world_data.map[SW[:,0], SW[:,1]]].reshape(self.count,5,3)
 
         wall_collision = np.sum((tests == np.array(Colors.WALL_COLOR)).reshape(self.count,-1),axis=1) == 0
         self.alive_list *= wall_collision
 
-        for i, c in enumerate(checkpoints):
+        for i, c in enumerate(self.world_data.checkpoints):
             c_collision = np.sum((tests == np.array(c.color)).reshape(self.count,-1), axis=1)
 
             for id in range(self.count):
                 # hit at least one true and have one whole color right
                 if c_collision[id] > 0 and c_collision[id] % 3 == 0:
                     if self.checkpoint_rankings[id][-1][0] == i-1 or \
-                       (self.checkpoint_rankings[id][-1][0] == len(checkpoints)-1 and i == 0):
+                       (self.checkpoint_rankings[id][-1][0] == len(self.world_data.checkpoints)-1 and i == 0):
                         self.checkpoint_rankings[id].append((i, self.life_counters[id]))
                         if c.color == Colors.START_COLOR:
                             self.last_start_counter[id] = self.life_counters[id]
 
         print(self.checkpoint_rankings)
 
-    def update(self, map, checkpoints):
+    def update(self):
         self.life_counters += self.alive_list
         self.alive_list[self.life_counters > 1000] = False
 
@@ -162,16 +162,19 @@ class Cars:
 
         self.positions += delta*self.alive_list.reshape(-1,1)
 
-        self.__collision_handling(map, checkpoints)
+        self.__collision_handling()
 
+    def any_alive(self):
+        return np.sum(self.alive_list) > 0
 
     def reset(self, i=None):
         if i is not None:
             raise NotImplementedError
 
-        self.positions[:] = self.START_POSITION
-        self.rotations[:] = self.START_ROTATION
+        self.positions[:] = self.world_data.start_pos
+        self.rotations[:] = self.world_data.start_rot
         self.speeds[:] = self.START_SPEED
+        self.checkpoint_rankings  = [[(0,0)] for _ in range(self.count)]
 
     def input(self, i, input : tuple[bool, bool, bool, bool]):
         if not self.alive_list[i]: return
