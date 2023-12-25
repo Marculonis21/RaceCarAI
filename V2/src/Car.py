@@ -8,6 +8,7 @@ import numpy as np
 from src import Colors
 from src import Boundary
 from src import WorldData
+from src import RayCaster
 
 class Car:
     @staticmethod
@@ -24,13 +25,13 @@ class Car:
         up_ex = np.c_[up, np.zeros(up.shape[0])]
         right = np.cross(up_ex, np.array([0,0,-1]))[:,:2]
 
-        NN = pos + up*car_height + right*0
+        NN = np.clip(pos + up*car_height + right*0, 0, 799)
 
-        NE = pos + (up*(car_height-5)) + (right*car_width/5)
-        NW = pos + (up*(car_height-5)) - (right*car_width/5)
+        NE = np.clip(pos + (up*(car_height-5)) + (right*car_width/5),0,799)
+        NW = np.clip(pos + (up*(car_height-5)) - (right*car_width/5),0,799)
 
-        SE = pos + (up*(-car_height+2)) + (right*car_width/5)
-        SW = pos + (up*(-car_height+2)) - (right*car_width/5)
+        SE = np.clip(pos + (up*(-car_height+2)) + (right*car_width/5),0,799)
+        SW = np.clip(pos + (up*(-car_height+2)) - (right*car_width/5),0,799)
 
         return up, right, NN.astype(int), NE.astype(int), NW.astype(int), SE.astype(int), SW.astype(int)
 
@@ -78,6 +79,8 @@ class Cars:
         self.START_SPEED = 3
 
         self.checkpoint_rankings : list[list[tuple[int, float]]] = [[(0,0)] for _ in range(self.count)]
+
+        self.ray_caster = RayCaster.RayCaster(self.world_data.map, Colors.WALL_COLOR, 200)
 
         # ready to use after init
         self.reset()
@@ -144,7 +147,7 @@ class Cars:
                         if c.color == Colors.START_COLOR:
                             self.last_start_counter[id] = self.life_counters[id]
 
-        print(self.checkpoint_rankings)
+        # print(self.checkpoint_rankings)
 
     def update(self):
         self.life_counters += self.alive_list
@@ -164,6 +167,24 @@ class Cars:
 
         self.__collision_handling()
 
+    def observation(self, screen=PG.Surface((0,0)), debug=False):
+        self.ray_caster.visible = debug
+        observation = np.zeros([self.count, 6])
+
+        _,_,NN,_,_,_,_ = Car.get_corner_points(self.positions, self.rotations, self.car_image) # using orig image
+        angles = np.array([-60 + 30*rot for rot in range(5)])
+        mask = np.arange(5)
+
+        for id in range(self.count):
+            if not self.alive_list[id]: continue
+
+            _,length,_ = self.ray_caster.cast(NN[id], -self.rotations[id] + angles, screen, 2)
+            observation[id] = np.r_[length/self.ray_caster.max_length,0]
+            
+        observation[:, 5] = (self.life_counters-self.last_start_counter)/500.0
+
+        return observation
+
     def any_alive(self):
         return np.sum(self.alive_list) > 0
 
@@ -176,7 +197,22 @@ class Cars:
         self.speeds[:] = self.START_SPEED
         self.checkpoint_rankings  = [[(0,0)] for _ in range(self.count)]
 
-    def input(self, i, input : tuple[bool, bool, bool, bool]):
+
+    def input_controller(self, inputs : np.ndarray):
+        assert len(inputs) == self.count, "Assign inputs for all cars at once"
+
+        # power up|stable|down
+        # steer left|front|right
+
+        power_input, steer_input = inputs[:,0].astype(np.float64), inputs[:,1].astype(np.float64)
+        
+        p_change = np.logical_or(power_input > 0.25, power_input < -0.25)
+        self.speeds += self.alive_list * p_change * 0.4*power_input
+
+        s_change = np.logical_or(steer_input > 0.1, steer_input < -0.1)
+        self.rotations += self.alive_list * s_change * 5.0*power_input 
+
+    def input_player(self, i, input : tuple[bool, bool, bool, bool]):
         if not self.alive_list[i]: return
 
         if input[0]:
@@ -188,3 +224,4 @@ class Cars:
             self.rotations[i] += 1
         elif input[3]:
             self.rotations[i] -= 1
+    
