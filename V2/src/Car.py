@@ -78,6 +78,7 @@ class Cars:
         self.MIN_SPEED = 2.5
         self.START_SPEED = 3
 
+        # per car - list of tuples <checkpoint_id, time> (staring at (0,0))
         self.checkpoint_rankings : list[list[tuple[int, float]]] = [[(0,0)] for _ in range(self.count)]
 
         self.ray_caster = RayCaster.RayCaster(self.world_data.map, Colors.WALL_COLOR, 200)
@@ -173,7 +174,6 @@ class Cars:
 
         _,_,NN,_,_,_,_ = Car.get_corner_points(self.positions, self.rotations, self.car_image) # using orig image
         angles = np.array([-60 + 30*rot for rot in range(5)])
-        mask = np.arange(5)
 
         for id in range(self.count):
             if not self.alive_list[id]: continue
@@ -224,4 +224,31 @@ class Cars:
             self.rotations[i] += 1
         elif input[3]:
             self.rotations[i] -= 1
+
+    def calc_fitness(self) -> np.ndarray:
+        # HARD-CODED for now - up for change later
+        DIST_VALUE, CHECK_VALUE, SPEED_VALUE = 0.75, 50.0, 100.0
+
+        fitness = np.zeros([self.count])
+
+        fitness += self.distances*DIST_VALUE
+
+        most_checkpoints = -1
+        for id in range(self.count):
+            if len(self.checkpoint_rankings[id]) > most_checkpoints:
+                most_checkpoints = len(self.checkpoint_rankings[id])
+
+            fitness[id] += len(self.checkpoint_rankings[id])*CHECK_VALUE
+
+        for i in range(1, most_checkpoints):
+            car_ids = [id for id in range(self.count) if len(self.checkpoint_rankings[id]) > i]
+            car_times = np.array([self.checkpoint_rankings[id][i][1] for id in car_ids])
+
+            argsort_times = np.argsort(car_times)
+
+            for rank, index in enumerate(argsort_times):
+                id = car_ids[index]
+                fitness[id] += SPEED_VALUE - rank*(SPEED_VALUE/len(car_ids))
+
+        return fitness
     

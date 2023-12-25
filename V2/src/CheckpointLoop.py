@@ -86,10 +86,9 @@ def checkpoint_loop(screen : PG.Surface, clock : PG.time.Clock, boundary_map : n
             if event.type == PG.MOUSEBUTTONDOWN and event.button == 1: 
 
                 # get all rays in circle
-                hit_rays = []
                 step = 2
                 angles = np.arange(360//step) * step
-                hit, length, hit_pos = ray_caster.cast(m_pos, angles, screen, 1)
+                hit, _, hit_pos = ray_caster.cast(m_pos, angles, screen, 1)
 
                 # from hits cast 180deg another
                 end_points = []
