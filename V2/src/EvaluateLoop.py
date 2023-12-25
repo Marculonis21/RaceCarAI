@@ -28,7 +28,6 @@ def evaluate_loop(screen : PG.Surface, clock : PG.time.Clock, cars : Car.Cars, i
         cars.input_controller(actions)
 
         PG.display.flip()
-        clock.tick(60)
+        # clock.tick(60)
 
-    print(cars.calc_fitness())
     return cars.calc_fitness()

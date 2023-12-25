@@ -13,7 +13,7 @@ def checkpoint_loop(screen : PG.Surface, clock : PG.time.Clock, boundary_map : n
     assert boundary_map is not None, "Boundary loop should be run first"
 
     def set_start(p1,p2):
-        checkpoints.append(Boundary.Checkpoint(screen, Colors.START_COLOR, p1, p2))
+        checkpoints.append(Boundary.Checkpoint(Colors.START_COLOR, p1, p2))
 
         start_pos = ((p1[0] + p2[0])//2, (p1[1]+p2[1])//2)
         
@@ -21,7 +21,7 @@ def checkpoint_loop(screen : PG.Surface, clock : PG.time.Clock, boundary_map : n
         while True:
             screen.blit(surface, (0,0))
             for c in checkpoints:
-                c.draw()
+                c.draw(screen)
 
             m_pos = PG.mouse.get_pos()
             for event in PG.event.get():
@@ -57,7 +57,7 @@ def checkpoint_loop(screen : PG.Surface, clock : PG.time.Clock, boundary_map : n
                  Colors.CHECKPOINT_COLOR[1],
                  Colors.CHECKPOINT_COLOR[2] - len(checkpoints)-1)
 
-        checkpoints.append(Boundary.Checkpoint(screen, color, p1, p2))
+        checkpoints.append(Boundary.Checkpoint(color, p1, p2))
 
     surface = PG.surfarray.make_surface(boundary_map)
     ray_caster = RayCaster.RayCaster(boundary_map, Colors.WALL_COLOR, 200)
@@ -70,7 +70,7 @@ def checkpoint_loop(screen : PG.Surface, clock : PG.time.Clock, boundary_map : n
     while True:
         screen.blit(surface, (0,0))
         for c in checkpoints:
-            c.draw()
+            c.draw(screen)
 
         m_pos = PG.mouse.get_pos()
 

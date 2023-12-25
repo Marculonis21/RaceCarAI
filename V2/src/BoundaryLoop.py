@@ -17,7 +17,7 @@ def boundary_loop(screen : PG.Surface, clock : PG.time.Clock) -> np.ndarray:
     while True:
         screen.fill(Colors.BG_COLOR)
         for b in boundaries:
-            b.draw()
+            b.draw(screen)
 
         m_pos = PG.mouse.get_pos()
         for event in PG.event.get():
@@ -34,10 +34,9 @@ def boundary_loop(screen : PG.Surface, clock : PG.time.Clock) -> np.ndarray:
 
             # drawing
             if PG.mouse.get_pressed()[0] or PG.mouse.get_pressed()[2]:
-                boundaries.append(Boundary.CircleBoundary(screen,
-                                                            m_pos,
-                                                            brush_radius,
-                                                            Colors.WALL_COLOR if PG.mouse.get_pressed()[0] else Colors.BG_COLOR))
+                boundaries.append(Boundary.CircleBoundary(m_pos,
+                                                          brush_radius,
+                                                          Colors.WALL_COLOR if PG.mouse.get_pressed()[0] else Colors.BG_COLOR))
 
             # return
             if event.type == PG.KEYUP:
