@@ -73,6 +73,8 @@ def checkpoint_loop(screen : PG.Surface, clock : PG.time.Clock, boundary_map : n
             c.draw()
 
         m_pos = PG.mouse.get_pos()
+
+        ## DEBUG RAYCASTER TEST
         # step = 2
         # angles = np.arange(360//step) * step
         # hit, length, hit_pos = ray_caster.cast(m_pos, angles, screen, 2)
@@ -82,37 +84,28 @@ def checkpoint_loop(screen : PG.Surface, clock : PG.time.Clock, boundary_map : n
                 sys.exit(0)
 
             if event.type == PG.MOUSEBUTTONDOWN and event.button == 1: 
-                step = 2
 
-
+                # get all rays in circle
                 hit_rays = []
-
+                step = 2
                 angles = np.arange(360//step) * step
                 hit, length, hit_pos = ray_caster.cast(m_pos, angles, screen, 1)
-                print(hit)
-                quit()
 
-                for a in range(360//step):
-                    hit, length, hit_pos = ray_caster.cast(m_pos, a*step, screen, 1)
-                    if not hit: continue
-
-                    hit_rays.append((length, hit_pos, a*step))
-
-                hit_rays = sorted(hit_rays, key=lambda x: x[0])
+                # from hits cast 180deg another
                 end_points = []
+                end_point_lengths = []
+                for p, angle in zip(hit_pos[hit], angles[hit]):
+                    p = np.array([p])
+                    angle = np.array([angle])
 
-                for hr in hit_rays:
-                    p1 = hr[1]
-                    p1_a = hr[2]
+                    _hit, _length, other_hit = ray_caster.cast(p,angle+180,screen,2)
+                    if _hit and _length > 5:
+                        end_point_lengths.append(float(_length))
+                        end_points.append((p[0], other_hit[0]))
 
-                    hit, length, hit_pos = ray_caster.cast(p1,p1_a+180,screen,2)
-                    if hit and length > 5:
-                        end_points.append((p1,hit_pos))
-
-                end_points = sorted(end_points, key=lambda x: (x[0][0]-x[1][0])**2 + (x[0][1]-x[1][1])**2)
-
+                # make checkpoint between shortest dists
                 if len(end_points) > 0:
-                    p1,p2 = end_points[0]
+                    p1, p2 = end_points[np.argmin(end_point_lengths)]
 
                     if len(checkpoints) == 0:
                         start_rotation = set_start(p1,p2)

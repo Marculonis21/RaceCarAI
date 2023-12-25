@@ -17,7 +17,7 @@ class RayCaster:
     def cast(self, start, angle, screen=PG.Surface((0,0)), resolution = 1) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 
         def visualize(end_pos, hit):
-            PG.draw.line(screen, PG.Color("white"), start, end_pos)
+            PG.draw.line(screen, PG.Color("white"), tuple(start), end_pos)
             PG.draw.circle(screen, PG.Color("red" if hit else "white"), end_pos, 3, 0)
 
         _x = np.cos(np.radians(angle))
@@ -36,6 +36,7 @@ class RayCaster:
         # print(self.test_image[tests[:,:,0], tests[:,:,1]] == self.collider)
         hits = (self.test_image[tests[:,:,0], tests[:,:,1]] == self.collider).all(axis=2).T
         hits_first = np.argmax(hits,axis=1)
+        
 
         if self.visible:
             for id, hit in enumerate(hits_first):
