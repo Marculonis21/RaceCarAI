@@ -61,7 +61,7 @@ def checkpoint_loop(screen : PG.Surface, clock : PG.time.Clock, boundary_map : n
 
     surface = PG.surfarray.make_surface(boundary_map)
     ray_caster = RayCaster.RayCaster(boundary_map, Colors.WALL_COLOR, 200)
-    # ray_caster.visible = True
+    ray_caster.visible = True
 
     checkpoints : list[Boundary.Checkpoint] = []
     start_position = (0,0)
@@ -73,16 +73,27 @@ def checkpoint_loop(screen : PG.Surface, clock : PG.time.Clock, boundary_map : n
             c.draw()
 
         m_pos = PG.mouse.get_pos()
+        # step = 2
+        # angles = np.arange(360//step) * step
+        # hit, length, hit_pos = ray_caster.cast(m_pos, angles, screen, 2)
+
         for event in PG.event.get():
             if event.type == PG.QUIT:
                 sys.exit(0)
 
             if event.type == PG.MOUSEBUTTONDOWN and event.button == 1: 
-                step = 4
+                step = 2
+
 
                 hit_rays = []
+
+                angles = np.arange(360//step) * step
+                hit, length, hit_pos = ray_caster.cast(m_pos, angles, screen, 1)
+                print(hit)
+                quit()
+
                 for a in range(360//step):
-                    hit, length, hit_pos = ray_caster.cast(m_pos, a*step, screen, 2)
+                    hit, length, hit_pos = ray_caster.cast(m_pos, a*step, screen, 1)
                     if not hit: continue
 
                     hit_rays.append((length, hit_pos, a*step))
