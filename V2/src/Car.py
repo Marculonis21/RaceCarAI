@@ -195,8 +195,12 @@ class Cars:
         self.positions[:] = self.world_data.start_pos
         self.rotations[:] = self.world_data.start_rot
         self.speeds[:] = self.START_SPEED
-        self.checkpoint_rankings  = [[(0,0)] for _ in range(self.count)]
+        self.life_counters[:] = 0
+        self.distances[:] = 0
+        self.alive_list[:] = 1
 
+        self.checkpoint_rankings  = [[(0,0)] for _ in range(self.count)]
+        self.last_start_counter[:] = 0
 
     def input_controller(self, inputs : np.ndarray):
         assert len(inputs) == self.count, "Assign inputs for all cars at once"
@@ -210,7 +214,7 @@ class Cars:
         self.speeds += self.alive_list * p_change * 0.4*power_input
 
         s_change = np.logical_or(steer_input > 0.1, steer_input < -0.1)
-        self.rotations += self.alive_list * s_change * 5.0*power_input 
+        self.rotations += self.alive_list * s_change * 5.0*steer_input
 
     def input_player(self, i, input : tuple[bool, bool, bool, bool]):
         if not self.alive_list[i]: return
