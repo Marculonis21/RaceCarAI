@@ -98,7 +98,7 @@ def checkpoint_loop(screen : PG.Surface, clock : PG.time.Clock, boundary_map : n
                     angle = np.array([angle])
 
                     _hit, _length, other_hit = ray_caster.cast(p,angle+180,screen,2)
-                    if _hit and _length > 5:
+                    if _hit and _length > 20:
                         end_point_lengths.append(float(_length))
                         end_points.append((p[0], other_hit[0]))
 
