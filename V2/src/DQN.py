@@ -4,36 +4,35 @@ import random
 from collections import deque
 import tensorflow as tf
 import numpy as np
-import gym
+
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import Sequential
 from tensorflow.nn import relu
 from tensorflow.keras.optimizers import Adam
-from keras.models import model_from_json
 import pickle
-import matplotlib.pyplot as plt
 
 class DeepQLearningAgent:
-    def __init__(self, num_inputs, num_outputs, batch_size = 8, num_batches = 16):
-        self.num_inputs = num_inputs # state size
-        self.num_outputs = num_outputs # action size
+    def __init__(self, architecture=[6,8,], batch_size = 8, num_batches = 16):
+        self.state_size = state_size 
+        self.action_size = action_size 
         
         self.batch_size = batch_size
         self.num_batches = num_batches
         
         self.epsilon = 1.0 
+        self.epsilon_min = 0.01
+
         self.epsilon_decay = 0.995      
         self.gamma = 0.95
         
         self.memory = deque(maxlen=2000)
         self.build_model()
-        self.epsilon_min = 0.01
                  
     def build_model(self):
         self.model = Sequential([])
-        self.model.add(Dense(24, activation=relu, input_dim=self.num_inputs, name='dense_11'))
+        self.model.add(Dense(24, activation=relu, input_dim=self.state_size))
         self.model.add(Dense(24, activation=relu))
-        self.model.add(Dense(self.num_outputs, activation='linear'))
+        self.model.add(Dense(self.action_size, activation='linear'))
         
         opt = tf.keras.optimizers.Adam(lr=0.001)
         self.model.compile(optimizer=opt, loss='mse')
@@ -89,27 +88,26 @@ class DeepQLearningAgent:
     def memorize(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
         
-    def save_model(self):
-        model_json = self.model.to_json()
+    # def save_model(self):
+    #     model_json = self.model.to_json()
         
-        with open("model.json", "w") as json_file:
-            json_file.write(model_json)
+    #     with open("model.json", "w") as json_file:
+    #         json_file.write(model_json)
             
-        self.model.save_weights("model.h5")
+    #     self.model.save_weights("model.h5")
     
-    def load_model(self): 
-        json_file = open('model.json', 'r')
-        loaded_model_json = json_file.read()
-        json_file.close()
+    # def load_model(self): 
+    #     json_file = open('model.json', 'r')
+    #     loaded_model_json = json_file.read()
+    #     json_file.close()
         
-        loaded_model = model_from_json(loaded_model_json)
-        loaded_model.load_weights("model.h5")
+    #     loaded_model = model_from_json(loaded_model_json)
+    #     loaded_model.load_weights("model.h5")
         
-        self.model = loaded_model
+    #     self.model = loaded_model
 
 agent = DeepQLearningAgent(...,...)
-env = gym.make("CartPole-v1")
-rewards = []
+# rewards = []
 
 for i in range(1001):
     obs = env.reset()
