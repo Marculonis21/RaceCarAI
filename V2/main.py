@@ -12,6 +12,8 @@ from src import GA
 from src import WorldData
 from src import EvaluateLoop
 from src import Controller
+from src import AC
+from src import DDPG
 
 import pygame as PG
 
@@ -25,41 +27,30 @@ class App:
         self.clock = PG.time.Clock()
 
     def Run(self):
-        boundary_map = BoundaryLoop.boundary_loop(self.screen, self.clock)
-        map, checkpoints, start_position, start_rotation = CheckpointLoop.checkpoint_loop(self.screen, self.clock, boundary_map)
+        # boundary_map = BoundaryLoop.boundary_loop(self.screen, self.clock)
+        # map, checkpoints, start_position, start_rotation = CheckpointLoop.checkpoint_loop(self.screen, self.clock, boundary_map)
 
-        data = WorldData.World(map, checkpoints, start_position, start_rotation)
+        # data = WorldData.World(map, checkpoints, start_position, start_rotation)
 
-        cars = Car.Cars(50, data)
-        # surface = PG.surfarray.make_surface(map)
-        ga = GA.GA(50)
-        evaluate = functools.partial(EvaluateLoop.evaluate_loop, 
-                                     screen=self.screen, clock=self.clock,
-                                     cars=cars,
-                                     controller=Controller.NetController(),
-                                     map=map)
+        # WorldData.World.save(data, "track1")
+        # quit()
+        data = WorldData.World.load("track1")
 
-        ga.evolutionary_algorithm(evaluate,50)
+        # cars = Car.Cars(50, data)
+        # # surface = PG.surfarray.make_surface(map)
+        # ga = GA.GA(50)
+        # evaluate = functools.partial(EvaluateLoop.evaluate_loop, 
+        #                              screen=self.screen, clock=self.clock,
+        #                              cars=cars,
+        #                              controller=Controller.NetController(),
+        #                              map=data.map)
 
-        # EvaluateLoop.evaluate_loop(self.screen, self.clock, cars, pop, Controller.NetController(), map)
+        # ga.evolutionary_algorithm(evaluate,50)
 
-        # while True:
-        #     self.screen.blit(surface, (0,0))
-
-        #     cars.draw(self.screen)
-
-        #     for event in PG.event.get():
-        #         if event.type == PG.QUIT:
-        #             sys.exit(0)
-
-        #     keys = PG.key.get_pressed()  # Checking pressed keys
-        #     cars.input(0, (keys[PG.K_UP], keys[PG.K_DOWN], keys[PG.K_LEFT], keys[PG.K_RIGHT]))
-        #     # cars.input(0, (keys[PG.K_UP], keys[PG.K_DOWN], keys[PG.K_LEFT], keys[PG.K_RIGHT]))
-
-        #     cars.update(map, checkpoints)
-
-        #     PG.display.flip()
-        #     self.clock.tick(60)
+        # cars = Car.Cars(10, data)
+        cars = Car.Cars(1, data)
+        # AC.Run(self.screen, self.clock, cars, data.map) 
+        DDPG.Run(self.screen, self.clock, cars, data.map) 
 
 if __name__ == "__main__":
     app = App()

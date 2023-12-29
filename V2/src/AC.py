@@ -10,7 +10,9 @@ import torch.optim as optim
 from src import Car
 import pygame as PG
 import sys 
+import math
 
+from collections import deque
 
 class GenericNetwork(nn.Module):
     def __init__(self, lr, state_size, action_size, layer1_dims, layer2_dims):
@@ -36,11 +38,32 @@ class GenericNetwork(nn.Module):
 
         return y3
 
-        
+class GenericNetwork2(nn.Module):
+    def __init__(self, lr, state_size, action_size, layer1_dims):
+        super(GenericNetwork2, self).__init__()
+
+        self.lr = lr
+        self.state_size = state_size
+        self.action_size = action_size 
+
+        self.fc1 = nn.Linear(self.state_size, layer1_dims)
+        self.fc2 = nn.Linear(layer1_dims, self.action_size)
+
+        self.optimizer = optim.Adam(self.parameters(), lr=self.lr)
+        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
+        self.to(self.device)
+
+    def forward(self, observation):
+        state = T.tensor(observation, dtype=T.float).to(self.device)
+        y1 = F.relu(self.fc1(state))
+        y2 = self.fc2(y1)
+
+        return y2
+
 
 class ActorCritic:
     def __init__(self, alpha, beta, gamma=0.99, action_size=2, state_size=6,
-                 layer1_dims=64, layer_2_dims=32):
+                 layer1_dims=64, layer2_dims=64):
 
         self.action_size = action_size 
         self.state_size = state_size 
@@ -49,14 +72,14 @@ class ActorCritic:
 
         self.log_probs = None
         
-        self.actor  = GenericNetwork(alpha, state_size, 2*self.action_size, layer1_dims, layer_2_dims )
-        self.critic = GenericNetwork(beta, state_size, 1, layer1_dims, layer_2_dims )
+        self.actor  = GenericNetwork(alpha, state_size, 2*self.action_size, layer1_dims, layer2_dims)
+        self.critic = GenericNetwork(beta, state_size, 1, layer1_dims, layer2_dims)
 
         self.softplus = T.nn.Softplus()
                  
     def action(self, observation):
         mu, sigma = self.actor.forward(observation)
-        sigma = self.softplus(sigma) + 0.001
+        sigma = self.softplus(sigma) + 0.0001
         distr = T.distributions.Normal(mu, sigma)
 
         probs = distr.sample(sample_shape=T.Size([1]))
@@ -79,38 +102,49 @@ class ActorCritic:
         delta = target - critic_value # advantage
 
         assert self.log_probs is not None
+
         actor_loss = -self.log_probs * delta
         critic_loss = delta**2
 
-        (actor_loss + critic_loss).backward()
+        (actor_loss + critic_loss).mean().backward()
 
         self.actor.optimizer.step()
         self.critic.optimizer.step()
 
-
 def Run(screen : PG.Surface, clock : PG.time.Clock, cars : Car.Cars, map : np.ndarray, max_runs=-1):
     surface = PG.surfarray.make_surface(map)
 
-    power_ac1 = ActorCritic(0.0001, 0.0005, 0.99, action_size=1, state_size=6,
-                            layer1_dims=16, layer_2_dims=8)
-    steer_ac1 = ActorCritic(0.0001, 0.0005, 0.99, action_size=1, state_size=6, 
-                            layer1_dims=16, layer_2_dims=8)
-             
-    power_ac2 = ActorCritic(0.0001, 0.0005, 0.99, action_size=1, state_size=6,
-                            layer1_dims=32, layer_2_dims=16)
-    steer_ac2 = ActorCritic(0.0001, 0.0005, 0.99, action_size=1, state_size=6, 
-                           layer1_dims=32, layer_2_dims=16)
+    ALPHA = 0.0001
+    BETA = 0.0001
+    arch = [(256,256), (256,128), (128,128)]
 
-    power_ac3 = ActorCritic(0.0001, 0.0005, 0.99, action_size=1, state_size=6,
-                            layer1_dims=128, layer_2_dims=16)
-    steer_ac3 = ActorCritic(0.0001, 0.0005, 0.99, action_size=1, state_size=6, 
-                           layer1_dims=128, layer_2_dims=16)
+    assert len(arch) == cars.count, f"{len(arch)} not equal to {cars.count} car count"
+
+    ac_pairs = []
+    for l1,l2 in arch:
+        power = ActorCritic(ALPHA, BETA, 0.999, action_size=1, state_size=6,
+                                layer1_dims=l1, layer2_dims=l2)
+
+        steer = ActorCritic(ALPHA, BETA, 0.999, action_size=1, state_size=6,
+                                layer1_dims=l1, layer2_dims=l2)
+        # power = ActorCritic(ALPHA, BETA, 0.999, action_size=1, state_size=6,
+        #                         layer1_dims=l1)
+
+        # steer = ActorCritic(ALPHA, BETA, 0.999, action_size=1, state_size=6,
+        #                         layer1_dims=l1)
+
+        ac_pairs.append((power,steer))
+
     runs = 0
     while runs < max_runs or max_runs == -1:
         cars.reset()
 
-        last_reward = 0
         obs = np.zeros([cars.count,6])
+
+        last_reward = np.zeros([cars.count])
+        cum_rewards = np.zeros([cars.count])
+
+        last_alive = np.ones([cars.count])
         while cars.any_alive():
             screen.blit(surface, (0,0))
             cars.draw(screen)
@@ -119,40 +153,41 @@ def Run(screen : PG.Surface, clock : PG.time.Clock, cars : Car.Cars, map : np.nd
                 if event.type == PG.QUIT:
                     sys.exit(0)
 
+            inputs = np.zeros([cars.count, 2])
+            for i, (p, s) in enumerate(ac_pairs):
+                if not cars.alive_list[i]: continue
+                a = p.action(obs[i])
+                b = s.action(obs[i])
 
-            a1 = power_ac1.action(obs[0])
-            b1 = steer_ac1.action(obs[0])
-            a2 = power_ac2.action(obs[1])
-            b2 = steer_ac2.action(obs[1])
-            a3 = power_ac3.action(obs[2])
-            b3 = steer_ac3.action(obs[2])
-            
-            inputs = np.array([[a1,b1],
-                               [a2,b2],
-                               [a3,b3]])
+                inputs[i][0] = a
+                inputs[i][1] = b
 
             cars.input_controller(inputs)
             cars.update()
             next_obs = cars.observation(screen, False)
 
             # reward calc needs to improve
-            # reward = cars.calc_fitness() - last_reward
-            reward = cars.calc_fitness_immediate()
-            print(reward)
+            new_reward = cars.calc_fitness_immediate()
 
-            power_ac1.learn(obs[0], reward[0], next_obs[0], not cars.alive_list[0])
-            steer_ac1.learn(obs[0], reward[0], next_obs[0], not cars.alive_list[0])
-                                                         
-            power_ac2.learn(obs[1], reward[1], next_obs[1], not cars.alive_list[1])
-            steer_ac2.learn(obs[1], reward[1], next_obs[1], not cars.alive_list[1])
-                                                         
-            power_ac3.learn(obs[2], reward[2], next_obs[2], not cars.alive_list[2])
-            steer_ac3.learn(obs[2], reward[2], next_obs[2], not cars.alive_list[2])
+            reward = new_reward - last_reward
+            # print(reward)
+
+            cum_rewards += reward
+            for i, (p, s) in enumerate(ac_pairs):
+                if not last_alive[i]: continue
+
+                p.learn(obs[i], reward[i], next_obs[i], not cars.alive_list[i])
+                s.learn(obs[i], reward[i], next_obs[i], not cars.alive_list[i])
+
+                if not cars.alive_list[i]:
+                    last_alive[i] = 0
 
             PG.display.flip()
             # clock.tick(60)
 
             obs = next_obs
-            last_reward = reward
-        print(runs, cars.calc_fitness())
+            last_reward = new_reward
+
+        print(runs, cum_rewards)
+        runs += 1
 

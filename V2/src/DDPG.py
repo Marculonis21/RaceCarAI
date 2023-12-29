@@ -6,6 +6,9 @@ import torch as T
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import pygame as PG
+from src import Car 
+import sys
 
 class OUActionNoise():
     def __init__(self, mu, sigma=0.15, theta=0.2, dt=1e-2, x0=None):
@@ -102,7 +105,7 @@ class CriticNetwork(nn.Module):
 
         self.optimizer = optim.Adam(self.parameters(), lr=beta,
                                     weight_decay=0.01)
-        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cuda:1')
+        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
 
         self.to(self.device)
 
@@ -170,7 +173,7 @@ class ActorNetwork(nn.Module):
         self.mu.bias.data.uniform_(-f3, f3)
 
         self.optimizer = optim.Adam(self.parameters(), lr=alpha)
-        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cuda:1')
+        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
 
         self.to(self.device)
 
@@ -229,7 +232,7 @@ class Agent():
 
     def choose_action(self, observation):
         self.actor.eval()
-        state = T.tensor([observation], dtype=T.float).to(self.actor.device)
+        state = T.tensor(np.array([observation]), dtype=T.float).to(self.actor.device)
         mu = self.actor.forward(state).to(self.actor.device)
         mu_prime = mu + T.tensor(self.noise(), 
                                     dtype=T.float).to(self.actor.device)
@@ -315,34 +318,18 @@ class Agent():
         #self.target_critic.load_state_dict(critic_state_dict, strict=False)
         #self.target_actor.load_state_dict(actor_state_dict, strict=False)
 
-import pygame as PG
-from src.Car import Car
 
 def Run(screen : PG.Surface, clock : PG.time.Clock, cars : Car.Cars, map : np.ndarray, max_runs=-1):
     surface = PG.surfarray.make_surface(map)
 
-    ALPHA = 0.0001
-    BETA = 0.0001
-    arch = [(256,256), (256,128), (128,128)]
-
-    assert len(arch) == cars.count, f"{len(arch)} not equal to {cars.count} car count"
-
-    ac_pairs = []
-    for l1,l2 in arch:
-        power = ActorCritic(ALPHA, BETA, 0.999, action_size=1, state_size=6,
-                                layer1_dims=l1, layer2_dims=l2)
-
-        steer = ActorCritic(ALPHA, BETA, 0.999, action_size=1, state_size=6,
-                                layer1_dims=l1, layer2_dims=l2)
-        # power = ActorCritic(ALPHA, BETA, 0.999, action_size=1, state_size=6,
-        #                         layer1_dims=l1)
-
-        # steer = ActorCritic(ALPHA, BETA, 0.999, action_size=1, state_size=6,
-        #                         layer1_dims=l1)
-
-        ac_pairs.append((power,steer))
+    agent = Agent(alpha=0.0001, beta=0.001, 
+                    input_dims=[6], tau=0.001,
+                    batch_size=32, fc1_dims=128, fc2_dims=64, 
+                    n_actions=2)
 
     runs = 0
+    score_history = []
+
     while runs < max_runs or max_runs == -1:
         cars.reset()
 
@@ -352,6 +339,8 @@ def Run(screen : PG.Surface, clock : PG.time.Clock, cars : Car.Cars, map : np.nd
         cum_rewards = np.zeros([cars.count])
 
         last_alive = np.ones([cars.count])
+        agent.noise.reset()
+
         while cars.any_alive():
             screen.blit(surface, (0,0))
             cars.draw(screen)
@@ -360,16 +349,10 @@ def Run(screen : PG.Surface, clock : PG.time.Clock, cars : Car.Cars, map : np.nd
                 if event.type == PG.QUIT:
                     sys.exit(0)
 
-            inputs = np.zeros([cars.count, 2])
-            for i, (p, s) in enumerate(ac_pairs):
-                if not cars.alive_list[i]: continue
-                a = p.action(obs[i])
-                b = s.action(obs[i])
+            action = agent.choose_action(obs[0])
+            # print(action)
 
-                inputs[i][0] = a
-                inputs[i][1] = b
-
-            cars.input_controller(inputs)
+            cars.input_controller(np.array([action]))
             cars.update()
             next_obs = cars.observation(screen, False)
 
@@ -380,14 +363,9 @@ def Run(screen : PG.Surface, clock : PG.time.Clock, cars : Car.Cars, map : np.nd
             # print(reward)
 
             cum_rewards += reward
-            for i, (p, s) in enumerate(ac_pairs):
-                if not last_alive[i]: continue
 
-                p.learn(obs[i], reward[i], next_obs[i], not cars.alive_list[i])
-                s.learn(obs[i], reward[i], next_obs[i], not cars.alive_list[i])
-
-                if not cars.alive_list[i]:
-                    last_alive[i] = 0
+            agent.remember(obs,action,reward,next_obs, not cars.alive_list[0])
+            agent.learn()
 
             PG.display.flip()
             # clock.tick(60)
@@ -395,6 +373,8 @@ def Run(screen : PG.Surface, clock : PG.time.Clock, cars : Car.Cars, map : np.nd
             obs = next_obs
             last_reward = new_reward
 
-        print(runs, cum_rewards)
         runs += 1
+        score_history.append(cars.calc_fitness())
+        avg_score = np.mean(score_history[-100:])
+        print(f"R: {runs} - avg: {avg_score}")
 

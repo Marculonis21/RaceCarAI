@@ -101,7 +101,7 @@ class Cars:
             # image = self.car_image.copy()
             image = PG.transform.rotate(self.car_image, self.rotations[i])
             if self.alive_list[i]:
-                if np.argmax(self.distances) == i:
+                if np.argmax(self.distances) == i and self.count > 1:
                     image.fill((255, 0, 0, 255), None, PG.BLEND_RGBA_MULT)
                     image.fill((100,0,0) + (0,) , None, PG.BLEND_RGBA_ADD)
 
@@ -256,3 +256,15 @@ class Cars:
 
         return fitness
     
+    def calc_fitness_immediate(self) -> np.ndarray:
+        DIST_VALUE, CHECK_VALUE, SPEED_VALUE = 1, 20.0, 100.0
+
+        fitness = np.zeros([self.count])
+        fitness += self.distances*DIST_VALUE
+
+        for id in range(self.count):
+            fitness[id] += len(self.checkpoint_rankings[id])*CHECK_VALUE
+
+        fitness += -500*np.logical_not(self.alive_list)
+
+        return fitness
