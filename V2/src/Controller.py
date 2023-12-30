@@ -9,7 +9,6 @@ class Controller(ABC):
         pass
 
 class NetController(Controller):
-
     def action(self,pop, observation):
         out = []
         for ind in range(len(pop)):

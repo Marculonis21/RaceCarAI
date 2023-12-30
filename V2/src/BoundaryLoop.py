@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pygame as PG
+import pygame.freetype
 
 from src import Boundary
 from src import Colors
@@ -10,7 +11,17 @@ import sys
 import numpy as np
 
 def boundary_loop(screen : PG.Surface, clock : PG.time.Clock) -> np.ndarray:
-    brush_radius = 30
+    pygame.freetype.init()
+    font = pygame.freetype.SysFont("roboto", 20)
+
+    text = ["LMB - draw track boundary",
+            "RMB - erase track boundary",
+            "C - clear all",
+            "MOUSEWHEEL - change brush size",
+            "ENTER - confirm track shape and continue"
+            ]
+
+    brush_radius = 20
 
     boundaries : list[Boundary.CircleBoundary] = []
 
@@ -23,6 +34,13 @@ def boundary_loop(screen : PG.Surface, clock : PG.time.Clock) -> np.ndarray:
         for event in PG.event.get():
             if event.type == PG.QUIT:
                 sys.exit(0)
+
+            if event.type == PG.KEYUP:
+                if event.key == PG.K_RETURN:
+                    return PG.surfarray.array3d(screen)
+
+                if event.key == PG.K_c:
+                    boundaries = []
 
             if event.type == PG.MOUSEBUTTONDOWN:
                 if event.button == 4:
@@ -38,10 +56,9 @@ def boundary_loop(screen : PG.Surface, clock : PG.time.Clock) -> np.ndarray:
                                                           brush_radius,
                                                           Colors.WALL_COLOR if PG.mouse.get_pressed()[0] else Colors.BG_COLOR))
 
-            # return
-            if event.type == PG.KEYUP:
-                if event.key == PG.K_RETURN:
-                    return PG.surfarray.array3d(screen)
+        for i, t in enumerate(text):
+            text_surf = font.render(t, PG.Color("White"))
+            screen.blit(text_surf[0], (10,10+i*23))
 
         PG.draw.circle(screen, PG.Color("white"), m_pos, brush_radius, 1)
 
