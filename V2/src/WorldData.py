@@ -38,9 +38,10 @@ class World:
             pickle.dump(save_dict, f)
 
     @staticmethod
-    def load(name) -> World:
-        if not os.path.isfile(os.path.isfile(PATH + name + ".save")):
+    def load(name) -> World | None:
+        if not os.path.isfile(PATH + name + ".save"):
             print(f"Save file {name}.save not found") 
+            return None
 
         data = None
 
@@ -50,7 +51,7 @@ class World:
 
         assert data is not None, "File not loaded"
 
-        if not os.path.isfile(os.path.isfile(PATH + data["map_file"])):
+        if not os.path.isfile(PATH + data["map_file"]):
             print(f"Picture " + data["map_file"] + " not found") 
 
         surface = PG.image.load(PATH + data["map_file"])

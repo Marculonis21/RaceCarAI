@@ -17,6 +17,7 @@ import functools
 
 import argparse
 import sys
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--save", default=None, type=str, help="Save created track - uses argument as save name (then exits)")
@@ -49,10 +50,12 @@ class App:
         if args.load:
             data = WorldData.World.load(args.load)
             if data is None:
+                print("No data loaded - exiting")
                 sys.exit()
 
         if args.print_saved:
-            print("TODO")
+            names = [x[:-5] for x in os.listdir("data/user_data/") if x.endswith(".save")]
+            print("Save names: ", *names)
             sys.exit()
 
         # cars = Car.Cars(50, data)
