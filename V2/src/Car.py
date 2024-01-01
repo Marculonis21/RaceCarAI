@@ -244,20 +244,27 @@ class Cars:
 
             fitness[id] += len(self.checkpoint_rankings[id])*CHECK_VALUE
 
+        print("MAX", most_checkpoints)
         for i in range(1, most_checkpoints):
+            for id in range(self.count):
+                print(id, self.checkpoint_rankings[id])
+
             car_ids = [id for id in range(self.count) if len(self.checkpoint_rankings[id]) > i]
             car_times = np.array([self.checkpoint_rankings[id][i][1] for id in car_ids])
 
             argsort_times = np.argsort(car_times)
+            
+            sorted_ids = np.array(car_ids)[argsort_times]
 
-            for rank, index in enumerate(argsort_times):
-                id = car_ids[index]
+            for rank, id in enumerate(sorted_ids):
+                # id = car_ids[index]
+                print(rank, id, SPEED_VALUE - rank*(SPEED_VALUE/len(car_ids)))
                 fitness[id] += SPEED_VALUE - rank*(SPEED_VALUE/len(car_ids))
 
         return fitness
     
     def calc_fitness_immediate(self) -> np.ndarray:
-        DIST_VALUE, CHECK_VALUE, SPEED_VALUE = 1, 20.0, 100.0
+        DIST_VALUE, CHECK_VALUE, SPEED_VALUE = 0.1, 10.0, 100.0
 
         fitness = np.zeros([self.count])
         fitness += self.distances*DIST_VALUE
