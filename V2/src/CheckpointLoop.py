@@ -71,8 +71,9 @@ def checkpoint_loop(screen : PG.Surface, clock : PG.time.Clock, boundary_map : n
     def set_checkpoint(p1,p2):
         color = (Colors.CHECKPOINT_COLOR[0],
                  Colors.CHECKPOINT_COLOR[1],
-                 Colors.CHECKPOINT_COLOR[2] - len(checkpoints)-1)
+                 Colors.CHECKPOINT_COLOR[2] - (len(checkpoints)-1))
 
+        print(color)
         checkpoints.append(Boundary.Checkpoint(color, p1, p2))
 
     surface = PG.surfarray.make_surface(boundary_map)
@@ -89,16 +90,6 @@ def checkpoint_loop(screen : PG.Surface, clock : PG.time.Clock, boundary_map : n
         screen.blit(surface, (0,0))
         for i, c in enumerate(checkpoints):
             c.draw(screen)
-
-            # draw start arrow
-            if i == 0:
-                PG.draw.line(screen, (255,100,100), start_pos, XY_0, 3)
-                PG.draw.line(screen, (255,100,100), XY_0, XY_1, 3)
-                PG.draw.line(screen, (255,100,100), XY_0, XY_2, 3)
-
-        for i, t in enumerate(text):
-            text_surf = font.render(t, PG.Color("White"))
-            screen.blit(text_surf[0], (10,10+i*23))
 
         m_pos = PG.mouse.get_pos()
 
@@ -149,6 +140,17 @@ def checkpoint_loop(screen : PG.Surface, clock : PG.time.Clock, boundary_map : n
                         start_pos = ((p1[0] + p2[0])//2, (p1[1]+p2[1])//2)
                     else:
                         set_checkpoint(p1,p2)
+
+        # draw start arrow
+        if len(checkpoints) > 0:
+            PG.draw.line(screen, (255,100,100), start_pos, XY_0, 3)
+            PG.draw.line(screen, (255,100,100), XY_0, XY_1, 3)
+            PG.draw.line(screen, (255,100,100), XY_0, XY_2, 3)
+
+        for i, t in enumerate(text):
+            text_surf = font.render(t, PG.Color("White"))
+            screen.blit(text_surf[0], (10,10+i*23))
+
 
 
         PG.display.flip()
