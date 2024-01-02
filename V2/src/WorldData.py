@@ -24,7 +24,7 @@ class World:
 
         surface = PG.surfarray.make_surface(data.map)
         save_filename = f"{name}.save"
-        map_filename = f"p_{name}.jpg"
+        map_filename = f"p_{name}.png"
         PG.image.save(surface, PATH + map_filename)
 
         save_dict = {
