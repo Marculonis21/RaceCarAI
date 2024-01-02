@@ -137,12 +137,11 @@ class Cars:
         self.alive_list *= wall_collision
 
         for i, c in enumerate(self.world_data.checkpoints):
-            c_collision = np.sum((tests == np.array(c.color)).reshape(self.count,-1), axis=1)
+            c_collision = ((tests == c.color).all(axis=2)).any(axis=1)
 
             for id in range(self.count):
-                # hit at least one true and have one whole color right
-                if c_collision[id] > 0 and c_collision[id] % 3 == 0:
-                    if (self.checkpoint_rankings[id][-1][0] >= i-1) or \
+                if c_collision[id]:
+                    if (self.checkpoint_rankings[id][-1][0] == i-1) or \
                        (self.checkpoint_rankings[id][-1][0] == len(self.world_data.checkpoints)-1 and i == 0):
                         self.checkpoint_rankings[id].append((i, self.life_counters[id]))
                         if c.color == Colors.START_COLOR:
@@ -158,15 +157,16 @@ class Cars:
         self.speeds[self.speeds < self.MIN_SPEED] = self.MIN_SPEED 
 
         # MOVE
-        dx = (self.speeds *  np.cos(np.radians(self.rotations)))
-        dy = (self.speeds * -np.sin(np.radians(self.rotations)))
-        delta = np.c_[dx,dy]
+        sub_steps = 4
+        for _ in range(sub_steps):
+            dx =  np.cos(np.radians(self.rotations))
+            dy = -np.sin(np.radians(self.rotations))
+            delta = np.c_[dx,dy]
 
-        self.distances += np.linalg.norm(delta, axis=1)*self.alive_list
+            self.distances += (self.speeds*np.linalg.norm(delta, axis=1)*self.alive_list)/sub_steps
+            self.positions += (self.speeds.reshape(-1,1)*delta*self.alive_list.reshape(-1,1))/sub_steps
 
-        self.positions += delta*self.alive_list.reshape(-1,1)
-
-        self.__collision_handling()
+            self.__collision_handling()
 
     def observation(self, screen=PG.Surface((0,0)), debug=False):
         self.ray_caster.visible = debug
@@ -242,13 +242,9 @@ class Cars:
             if len(self.checkpoint_rankings[id]) > most_checkpoints:
                 most_checkpoints = len(self.checkpoint_rankings[id])
 
-            fitness[id] += len(self.checkpoint_rankings[id])*CHECK_VALUE
+            fitness[id] += (len(self.checkpoint_rankings[id])-1)*CHECK_VALUE
 
-        print("MAX", most_checkpoints)
         for i in range(1, most_checkpoints):
-            for id in range(self.count):
-                print(id, self.checkpoint_rankings[id])
-
             car_ids = [id for id in range(self.count) if len(self.checkpoint_rankings[id]) > i]
             car_times = np.array([self.checkpoint_rankings[id][i][1] for id in car_ids])
 
@@ -257,20 +253,18 @@ class Cars:
             sorted_ids = np.array(car_ids)[argsort_times]
 
             for rank, id in enumerate(sorted_ids):
-                # id = car_ids[index]
-                print(rank, id, SPEED_VALUE - rank*(SPEED_VALUE/len(car_ids)))
                 fitness[id] += SPEED_VALUE - rank*(SPEED_VALUE/len(car_ids))
 
         return fitness
     
     def calc_fitness_immediate(self) -> np.ndarray:
-        DIST_VALUE, CHECK_VALUE, SPEED_VALUE = 0.1, 10.0, 100.0
+        DIST_VALUE, CHECK_VALUE, SPEED_VALUE = 0.1, 50.0, 100.0
 
         fitness = np.zeros([self.count])
         fitness += self.distances*DIST_VALUE
 
         for id in range(self.count):
-            fitness[id] += len(self.checkpoint_rankings[id])*CHECK_VALUE
+            fitness[id] += (len(self.checkpoint_rankings[id])-1)*CHECK_VALUE
 
         fitness += -500*np.logical_not(self.alive_list)
 
