@@ -11,20 +11,25 @@ from src import Car
 import sys
 
 class OUActionNoise():
-    def __init__(self, mu, sigma=0.15, theta=0.2, dt=1e-2, x0=None):
+    def __init__(self, mu, sigma=0.2, theta=0.15, dt=1e-2, x0=None):
         self.theta = theta
         self.mu = mu
         self.sigma = sigma
+        self.sigma_start = sigma
         self.dt = dt
         self.x0 = x0
         self.reset()
 
     def __call__(self):
-        x = self.x_prev + self.theta * (self.mu - self.x_prev) * self.dt + \
-                self.sigma * np.sqrt(self.dt) * np.random.normal(size=self.mu.shape)
+        x = self.x_prev + self.theta * (self.mu - self.x_prev) * self.dt + self.sigma * np.sqrt(self.dt) * np.random.normal(size=self.mu.shape)
         self.x_prev = x
 
         return x
+
+    def update(self, step):
+        self.sigma = self.sigma_start*(0.998**step)
+        if self.sigma < 0.05*self.sigma_start:
+            self.sigma = 0.05*self.sigma_start
 
     def reset(self):
         self.x_prev = self.x0 if self.x0 is not None else np.zeros_like(self.mu)
@@ -204,7 +209,7 @@ class ActorNetwork(nn.Module):
 
 class Agent():
     def __init__(self, alpha, beta, input_dims, tau, n_actions, gamma=0.99,
-                 max_size=1000000, fc1_dims=400, fc2_dims=300, 
+                 max_size=10000, fc1_dims=64, fc2_dims=64, 
                  batch_size=64):
 
         self.gamma = gamma
@@ -234,8 +239,7 @@ class Agent():
         self.actor.eval()
         state = T.tensor(np.array([observation]), dtype=T.float).to(self.actor.device)
         mu = self.actor.forward(state).to(self.actor.device)
-        mu_prime = mu + T.tensor(self.noise(), 
-                                    dtype=T.float).to(self.actor.device)
+        mu_prime = mu + T.tensor(self.noise(), dtype=T.float).to(self.actor.device)
         self.actor.train()
 
         return mu_prime.cpu().detach().numpy()[0]
@@ -319,12 +323,12 @@ class Agent():
         #self.target_actor.load_state_dict(actor_state_dict, strict=False)
 
 
-def Run(screen : PG.Surface, clock : PG.time.Clock, cars : Car.Cars, map : np.ndarray, max_runs=-1):
+def Run(screen : PG.Surface, clock : PG.time.Clock, cars : Car.Cars, map : np.ndarray, dims1=64, batch=64, max_runs=-1, visualize=False):
     surface = PG.surfarray.make_surface(map)
 
     agent = Agent(alpha=0.0001, beta=0.001, 
-                    input_dims=[6], tau=0.001,
-                    batch_size=32, fc1_dims=128, fc2_dims=64, 
+                    input_dims=[6], tau=0.01,
+                    batch_size=batch, fc1_dims=dims1, fc2_dims=64, 
                     n_actions=2)
 
     runs = 0
@@ -336,14 +340,14 @@ def Run(screen : PG.Surface, clock : PG.time.Clock, cars : Car.Cars, map : np.nd
         obs = np.zeros([cars.count,6])
 
         last_reward = np.zeros([cars.count])
-        cum_rewards = np.zeros([cars.count])
 
-        last_alive = np.ones([cars.count])
         agent.noise.reset()
+        agent.noise.update(runs)
 
         while cars.any_alive():
-            screen.blit(surface, (0,0))
-            cars.draw(screen)
+            if visualize:
+                screen.blit(surface, (0,0))
+                cars.draw(screen)
 
             for event in PG.event.get():
                 if event.type == PG.QUIT:
@@ -362,19 +366,20 @@ def Run(screen : PG.Surface, clock : PG.time.Clock, cars : Car.Cars, map : np.nd
             reward = new_reward - last_reward
             # print(reward)
 
-            cum_rewards += reward
-
             agent.remember(obs,action,reward,next_obs, not cars.alive_list[0])
             agent.learn()
 
-            PG.display.flip()
-            # clock.tick(60)
+            if visualize:
+                PG.display.flip()
+                # clock.tick(60)
 
             obs = next_obs
             last_reward = new_reward
 
-        runs += 1
-        score_history.append(cars.calc_fitness())
-        avg_score = np.mean(score_history[-100:])
-        print(f"R: {runs} - avg: {avg_score}")
 
+        runs += 1
+        score_history.append(cars.calc_fitness()[0])
+        avg_score = np.mean(score_history[-100:])
+        print(f"R: {runs} - avg: {avg_score} last: {score_history[-1]}")
+
+    return score_history
