@@ -102,8 +102,18 @@ class GA:
             mating_pool = self.roulette_wheel_selection(pop, fits)
             offspring = self.mutation(self.crossover(mating_pool))
 
-            pop = offspring[:-1]+[pop[np.argmax(fits)]] #elitism
+            # print(np.argsort(-fits))
+
+            sorted = pop[np.argsort(-fits)[:5]]
+            pop = offspring[:-5]
+            for i in range(len(sorted)):
+                pop += [sorted[i]] 
+                # print(sorted[i])
+
+            # pop = offspring[:-1]+[] #elitism
+
             pop = np.array(pop,dtype=object)
+            # print(pop.shape)
 
             G += 1
 
