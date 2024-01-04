@@ -323,12 +323,13 @@ class Agent():
         #self.target_actor.load_state_dict(actor_state_dict, strict=False)
 
 
-def Run(screen : PG.Surface, clock : PG.time.Clock, cars : Car.Cars, map : np.ndarray, dims1=64, batch=64, max_runs=-1, visualize=False):
+def Run(screen : PG.Surface, clock : PG.time.Clock, cars : Car.Cars, map : np.ndarray, dims1=64, dims2=64, batch=64, max_runs=-1, visualize=False):
     surface = PG.surfarray.make_surface(map)
 
     agent = Agent(alpha=0.0001, beta=0.001, 
                     input_dims=[6], tau=0.01,
-                    batch_size=batch, fc1_dims=dims1, fc2_dims=64, 
+                    batch_size=batch, 
+                    fc1_dims=dims1, fc2_dims=dims2, 
                     n_actions=2)
 
     runs = 0

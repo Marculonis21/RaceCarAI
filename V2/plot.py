@@ -41,17 +41,18 @@ if sys.argv[2] == "GA":
 
 if sys.argv[2] == "DDPG":
     r_max_max10 = moving_average(np.max(data, axis=0),10)
-    r_max_max100 = moving_average(np.max(data, axis=0),100)
     r_max_means = moving_average(np.mean(data, axis=0),10)
     max_means = np.mean(data, axis=0)
     q25 = np.percentile(data, q=25, axis=0)
     q75 = np.percentile(data, q=75, axis=0)
 
     plt.plot(np.arange(r_max_means.shape[0]), r_max_means, label="max-mean rolling average")
-    plt.plot(np.arange(r_max_max10.shape[0]), r_max_max10, label = "max-max rolling average 10")
-    # plt.plot(np.arange(r_max_max100.shape[0]), r_max_max100, label = "max-max rolling average 100")
+    plt.plot(np.arange(r_max_max10.shape[0]), r_max_max10, label = "max-max rolling average")
     plt.fill_between(np.arange(q25.shape[0]),q25,q75,alpha=0.25)
-    # plt.axvline(x = 346, color = 'black', label = 'sigma decay')
+    plt.axvline(x = 346, color = 'black', label = 'noise decay - halflife')
 
+plt.xlabel("Gens/Runs")
+plt.ylabel("Fitness")
+plt.tight_layout()
 plt.legend()
 plt.show()

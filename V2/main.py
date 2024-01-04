@@ -11,8 +11,6 @@ from src import Controller
 from src import AC
 from src import DDPG
 
-import torch
-
 import pygame as PG
 
 import functools
@@ -31,7 +29,7 @@ parser.add_argument("--draw", default=False, action="store_true", help="Enable t
 REPEATS = 10
 
 class App:
-    def __init__(self, args):
+    def __init__(self):
         PG.init()
         self.screen = PG.display.set_mode((800,800))
         PG.display.set_caption("RACE CAR AI")
@@ -47,23 +45,24 @@ class App:
     def Run(self, args : argparse.Namespace):
         data = None
 
-        if args.save:
-            data = self.TrackCreation()
-            WorldData.World.save(data, args.save)
-            sys.exit()
-
         if args.load:
             data = WorldData.World.load(args.load)
             if data is None:
                 print("No data loaded - exiting")
                 sys.exit()
+        else:
+            data = self.TrackCreation()
+
+        if args.save:
+            WorldData.World.save(data, args.save)
+            sys.exit()
 
         if args.print_saved:
             names = [x[:-5] for x in os.listdir("data/user_data/") if x.endswith(".save")]
             print("Save names: ", *names)
             sys.exit()
 
-        assert data is not None
+        assert data is not None, "Something unhandled and still wrong with track data init"
 
         # run_data = []
         # for i in range(REPEATS):
@@ -76,32 +75,35 @@ class App:
         #                                 controller=Controller.NetController(),
         #                                 map=data.map)
 
-        #     fits = ga.evolutionary_algorithm(evaluate, gen_count=100, visualize=args.draw)
+        #     fits = ga.evolutionary_algorithm(evaluate, gen_count=75, visualize=args.draw)
         #     run_data.append(fits)
 
-#         np.save(f"data/run_data/GA_c50_g100.npy", np.array(run_data))
-
-        # run_data = []
-        # for i in range(REPEATS):
-        #     print(f"DDPG {i} $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-        #     cars = Car.Cars(1, data)
-        #     fits = DDPG.Run(self.screen, self.clock, cars, data.map, dims1=64, max_runs=1000, visualize=args.draw) 
-        #     run_data.append(fits)
-
-        # np.save(f"data/run_data/DDPG_arch64_64.npy", np.array(run_data))
+        # np.save(f"data/run_data/track2/GA_c50_g75.npy", np.array(run_data))
 
         run_data = []
         for i in range(REPEATS):
             print(f"DDPG {i} $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
             cars = Car.Cars(1, data)
-            fits = DDPG.Run(self.screen, self.clock, cars, data.map, dims1=128, max_runs=1000, visualize=args.draw) 
+            fits = DDPG.Run(self.screen, self.clock, cars, data.map, 
+                            dims1=64, dims2=64,
+                            batch=64, max_runs=500, visualize=args.draw) 
             run_data.append(fits)
 
-        np.save(f"data/run_data/DDPG_arch128_64.npy", np.array(run_data))
+        np.save(f"data/run_data/track1/DDPG_arch64_64_max500.npy", np.array(run_data))
+
+        # run_data = []
+        # for i in range(REPEATS):
+        #     print(f"DDPG {i} $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+        #     cars = Car.Cars(1, data)
+        #     fits = DDPG.Run(self.screen, self.clock, cars, data.map, dims1=128,
+        #                     batch=32, max_runs=500, visualize=args.draw) 
+        #     run_data.append(fits)
+
+        # np.save(f"data/run_data/track2/DDPG_arch128_64_max500.npy", np.array(run_data))
             
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    app = App(args)
+    app = App()
     app.Run(args)
     

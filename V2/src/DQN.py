@@ -2,13 +2,18 @@
 
 import random
 from collections import deque
-import tensorflow as tf
-import numpy as np
 
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.models import Sequential
-from tensorflow.nn import relu
-from tensorflow.keras.optimizers import Adam
+import numpy as np
+import tensorflow as tf
+
+import keras as K
+from keras.layers import Dense, Input
+from keras.models import Model
+
+# from tensorflow.keras.layers import Dense
+# from tensorflow.keras.models import Sequential
+# from tensorflow.nn import relu
+# from tensorflow.keras.optimizers import Adam
 import pickle
 
 class DeepQLearningAgent:
