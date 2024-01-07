@@ -64,32 +64,32 @@ class App:
 
         assert data is not None, "Something unhandled and still wrong with track data init"
 
-        # run_data = []
-        # for i in range(REPEATS):
-        #     print(f"GA {i} $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-        #     cars = Car.Cars(50, data)
-        #     ga = GA.GA(cars.count)
-        #     evaluate = functools.partial(EvaluateLoop.evaluate_loop, 
-        #                                 screen=self.screen, clock=self.clock,
-        #                                 cars=cars,
-        #                                 controller=Controller.NetController(),
-        #                                 map=data.map)
+        run_data = []
+        for i in range(REPEATS):
+            print(f"GA {i} $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+            cars = Car.Cars(50, data)
+            ga = GA.GA(cars.count)
+            evaluate = functools.partial(EvaluateLoop.evaluate_loop, 
+                                        screen=self.screen, clock=self.clock,
+                                        cars=cars,
+                                        controller=Controller.NetController(),
+                                        map=data.map)
 
-        #     fits = ga.evolutionary_algorithm(evaluate, gen_count=75, visualize=args.draw)
-        #     run_data.append(fits)
+            fits = ga.evolutionary_algorithm(evaluate, gen_count=-1, visualize=args.draw)
+            run_data.append(fits)
 
         # np.save(f"data/run_data/track2/GA_c50_g75.npy", np.array(run_data))
 
-        run_data = []
-        for i in range(REPEATS):
-            print(f"DDPG {i} $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-            cars = Car.Cars(1, data)
-            fits = DDPG.Run(self.screen, self.clock, cars, data.map, 
-                            dims1=64, dims2=64,
-                            batch=64, max_runs=500, visualize=args.draw) 
-            run_data.append(fits)
+        # run_data = []
+        # for i in range(REPEATS):
+        #     print(f"DDPG {i} $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+        #     cars = Car.Cars(1, data)
+        #     fits = DDPG.Run(self.screen, self.clock, cars, data.map, 
+        #                     dims1=64, dims2=64,
+        #                     batch=64, max_runs=500, visualize=args.draw) 
+        #     run_data.append(fits)
 
-        np.save(f"data/run_data/track1/DDPG_arch64_64_max500.npy", np.array(run_data))
+        # np.save(f"data/run_data/track1/DDPG_arch64_64_max500.npy", np.array(run_data))
 
         # run_data = []
         # for i in range(REPEATS):
